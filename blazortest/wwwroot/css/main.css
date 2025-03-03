@@ -1,0 +1,83 @@
+.teriary-color {
+  background-color: #9B1C31 !important;
+}
+
+body {
+  background-color: #FAF3E0 !important;
+  font-family: "Arial", sans-serif;
+}
+
+.welcome-MudContainer {
+  margin: 2rem 0rem;
+  color: #9B1C31;
+}
+.welcome-MudContainer .btn-add-vehicle {
+  width: 10rem;
+  color: #FAF3E0;
+  background-color: #9B1C31;
+  margin: 1rem 0rem;
+}
+.welcome-MudContainer .btn-add-vehicle:hover {
+  color: #9B1C31;
+  background-color: #FAF3E0;
+  border: 1px solid #9B1C31;
+  box-shadow: 0px 1px 10px #9b1c31;
+}
+.welcome-MudContainer .Welcoming-MudGrid-Boxes .mud-grid-item {
+  margin: 2rem 3rem;
+}
+.welcome-MudContainer .Welcoming-MudGrid-Boxes .mud-grid-item .mud-paper {
+  width: 90%;
+  height: 10rem;
+  background-color: #9B1C31;
+  color: #FAF3E0;
+}
+.welcome-MudContainer .Welcoming-MudGrid-Boxes .mud-grid-item .mud-paper:hover {
+  background-color: #FAF3E0;
+  color: #9B1C31;
+  border: 1px solid #9B1C31;
+}
+
+.Add-vehicle-Container-box {
+  width: 100% !important;
+}
+.Add-vehicle-Container-box .mud-card {
+  width: 500px !important;
+  border: 2px solid #9B1C31 !important;
+}
+.Add-vehicle-Container-box .btn-Add-vehicle-container-box-submit-button {
+  width: 10rem;
+  color: #FAF3E0;
+  background-color: #9B1C31;
+  margin: 1rem 0rem;
+  margin: 0;
+  width: auto;
+}
+.Add-vehicle-Container-box .btn-Add-vehicle-container-box-submit-button:hover {
+  color: #9B1C31;
+  background-color: #FAF3E0;
+  border: 1px solid #9B1C31;
+  box-shadow: 0px 1px 10px #9b1c31;
+}
+.Add-vehicle-Container-box .btn-Add-vehicle-container-box-close-button {
+  width: 10rem;
+  color: #FAF3E0;
+  background-color: #9B1C31;
+  margin: 1rem 0rem;
+  background-color: white;
+  color: red;
+  border: 1px solid red;
+  margin: 0 1rem;
+}
+.Add-vehicle-Container-box .btn-Add-vehicle-container-box-close-button:hover {
+  color: #9B1C31;
+  background-color: #FAF3E0;
+  border: 1px solid #9B1C31;
+  box-shadow: 0px 1px 10px #9b1c31;
+}
+.Add-vehicle-Container-box .btn-Add-vehicle-container-box-close-button:hover {
+  background-color: red;
+  color: white;
+}
+
+/*# sourceMappingURL=main.css.map */

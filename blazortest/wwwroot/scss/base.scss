@@ -1,0 +1,88 @@
+﻿$primary-color: #FAF3E0;
+$secondary-color: #9B1C31;
+
+// Common Styles
+.teriary-color {
+    background-color: $secondary-color !important;
+}
+
+body {
+    background-color: $primary-color !important;
+    font-family: 'Arial', sans-serif;
+}
+
+// Button Mixin (Reusability)
+@mixin button-styles {
+    width: 10rem;
+    color: $primary-color;
+    background-color: $secondary-color;
+    margin: 1rem 0rem;
+
+    &:hover {
+        color: $secondary-color;
+        background-color: $primary-color;
+        border: 1px solid $secondary-color;
+        box-shadow: 0px 1px 10px rgba($secondary-color, 1);
+    }
+}
+
+
+// Main Container Styling
+.welcome-MudContainer {
+    margin: 2rem 0rem;
+    color: $secondary-color;
+    // Ensure all buttons inside this container follow the same style
+    .btn-add-vehicle {
+        @include button-styles;
+    }
+
+    .Welcoming-MudGrid-Boxes {
+        .mud-grid-item {
+            margin: 2rem 3rem;
+
+            .mud-paper {
+                width: 90%;
+                height: 10rem;
+                background-color: $secondary-color;
+                color: $primary-color;
+
+                &:hover {
+                    background-color: $primary-color;
+                    color: $secondary-color;
+                    border: 1px solid $secondary-color;
+                }
+            }
+                //.mud-typography {
+                //    color: black;
+                //}
+        }
+    }
+}
+
+// Add Vehicle Container
+.Add-vehicle-Container-box {
+    width: 100% !important;
+
+    .mud-card {
+        width: 500px !important;
+        border: 2px solid $secondary-color !important;
+    }
+
+    .btn-Add-vehicle-container-box-submit-button {
+        @include button-styles;
+        margin: 0 0 1rem 0;
+        width: 100%;
+    }
+
+    .btn-Add-vehicle-container-box-close-button {
+        @include button-styles;
+            background-color: white;
+            color: red;
+            border: 1px solid red;
+            margin: 0 1rem;
+        &:hover {
+            background-color: red;
+            color: white;
+        }
+    }
+}

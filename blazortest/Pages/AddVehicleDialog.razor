@@ -1,0 +1,120 @@
+﻿@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@using Aaronbackend
+@using MudBlazor
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@using Aaronbackend
+@using MudBlazor
+
+@code {
+    [Parameter] public EventCallback OnVehicleAdded { get; set; }
+    [Parameter] public EventCallback OnVehicleUpdated { get; set; }
+    [Parameter] public Dictionary<string, object>? Vehicle { get; set; }
+    [Parameter] public bool IsEditMode { get; set; } = false;
+
+    private Vehicle vehicle = new();
+    private bool isSubmitting = false;
+    private IDialogReference? _dialogReference; // ✅ Store dialog reference
+
+    protected override void OnInitialized()
+    {
+        if (IsEditMode && Vehicle != null)
+        {
+            vehicle = new Vehicle
+                {
+                    Id = Vehicle.ContainsKey("id") && int.TryParse(Vehicle["id"]?.ToString(), out int vehicleId) ? vehicleId : 0,
+                    LicensePlate = Vehicle["licensePlate"]?.ToString() ?? "",
+                    Model = Vehicle["model"]?.ToString() ?? "",
+                    Owner = Vehicle["owner"]?.ToString() ?? "",
+                    OwnerAddress = Vehicle["ownerAddress"]?.ToString() ?? "",
+                    OwnerContactNumber = Vehicle["ownerContactNumber"]?.ToString() ?? "",
+                    OwnerEmail = Vehicle["ownerEmail"]?.ToString() ?? "",
+                    VehicleName = Vehicle["vehicleName"]?.ToString() ?? "",
+                    Price = float.TryParse(Vehicle["price"]?.ToString(), out float price) ? price : 0
+                };
+        }
+    }
+
+    public void SetDialogReference(IDialogReference dialogReference)
+    {
+        _dialogReference = dialogReference; // ✅ Store reference
+    }
+
+    private async Task SubmitVehicle()
+    {
+        isSubmitting = true;
+
+        try
+        {
+            HttpResponseMessage response;
+            if (IsEditMode)
+            {
+                response = await Http.PutAsJsonAsync($"https://localhost:7043/Logic/update/{vehicle.Id}", vehicle);
+            }
+            else
+            {
+                response = await Http.PostAsJsonAsync("https://localhost:7043/Logic/add", vehicle);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(IsEditMode ? "Vehicle updated successfully." : "Vehicle added successfully.");
+                vehicle = new Vehicle();
+
+                if (IsEditMode)
+                {
+                    await OnVehicleUpdated.InvokeAsync();
+                }
+                else
+                {
+                    await OnVehicleAdded.InvokeAsync();
+                }
+
+                _dialogReference?.Close(DialogResult.Ok(vehicle));
+            }
+            else
+            {
+                string errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+
+        isSubmitting = false;
+    }
+}
+
+
+<MudContainer Class="Add-vehicle-Container-box pb-4">
+    <MudGrid>
+        <MudItem>
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">@((IsEditMode) ? "Edit Vehicle" : "Add Vehicle")</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudTextField @bind-Value="vehicle.LicensePlate" Label="License Plate" Variant="Variant.Outlined" Placeholder="KA19MF8008" Required="true" />
+                    <MudTextField @bind-Value="vehicle.Model" Label="Model" Variant="Variant.Outlined" Placeholder="Ex - 2020" Required="true" />
+                    <MudTextField @bind-Value="vehicle.Owner" Label="Name" Variant="Variant.Outlined" Placeholder="Ex - Sharu Bhai" Required="true" />
+                    <MudTextField @bind-Value="vehicle.OwnerAddress" Label="Address" Variant="Variant.Outlined" Placeholder="Ex - Bali, Thailand" Required="true" />
+                    <MudTextField @bind-Value="vehicle.OwnerContactNumber" Label="Contact Number" Variant="Variant.Outlined" Placeholder="Ex - 6900000069" Required="true" />
+                    <MudTextField @bind-Value="vehicle.OwnerEmail" Label="Email" Variant="Variant.Outlined" Placeholder="Ex - you@you.com" Required="true" />
+                    <MudTextField @bind-Value="vehicle.VehicleName" Label="Vehicle Name" Variant="Variant.Outlined" Placeholder="Ex - Royal Enfield Bullet" Required="true" />
+                    <MudTextField @bind-Value="vehicle.Price" Label="Vehicle Price" Variant="Variant.Outlined" Placeholder="69,000" Required="true" />
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton OnClick="SubmitVehicle" Class="btn-Add-vehicle-container-box-submit-button" Disabled="@isSubmitting" FullWidth="true">
+                        @((IsEditMode) ? "Update Vehicle" : "Save Vehicle")
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

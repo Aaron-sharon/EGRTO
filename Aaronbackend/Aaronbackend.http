@@ -1,0 +1,6 @@
+@Aaronbackend_HostAddress = http://localhost:5147
+
+GET {{Aaronbackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -21,7 +21,8 @@
         </MudItem>
     </MudGrid>
 
-    <MudTable T="Dictionary<string, object>" ServerData="LoadVehicles" Hover="true" @ref="tableRef">
+    <MudTable T="Dictionary<string, object>" ServerData="LoadVehicles" Hover="true" @ref="tableRef" 
+			  RowsPerPage="25" PageSizeOptions="new int[] { 5, 10, 20 }" Dense="true">
         <HeaderContent>
             <MudTh>License Plate</MudTh>
             <MudTh>Model</MudTh>
@@ -34,6 +35,7 @@
             <MudTh>Actions</MudTh>
         </HeaderContent>
         <RowTemplate Context="vehicle">
+            <MudTd DataLabel="#">@(GetRowNumber(vehicle))</MudTd>
             <MudTd DataLabel="License Plate">@vehicle["licensePlate"]</MudTd>
             <MudTd DataLabel="Model">@vehicle["model"]</MudTd>
             <MudTd DataLabel="Owner">@vehicle["owner"]</MudTd>
@@ -51,6 +53,9 @@
                 </MudButton>
             </MudTd>
         </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
     </MudTable>
 </MudContainer>
 
@@ -59,7 +64,13 @@
     private string searchQuery = "";
     private List<Dictionary<string, object>> allVehicles = new();
     private List<Dictionary<string, object>> filteredVehicles = new();
-
+    private int GetRowNumber(Dictionary<string, object> vehicle)
+    {
+        var pageIndex = tableRef?.CurrentPage ?? 0;
+        var pageSize = tableRef?.RowsPerPage ?? 5;
+        var itemIndex = filteredVehicles.IndexOf(vehicle);
+        return pageIndex * pageSize + itemIndex + 1;
+    }
     private void OpenAddVehicleDialog()
     {
         var parameters = new DialogParameters
@@ -86,15 +97,40 @@
     {
         try
         {
-            allVehicles = await Http.GetFromJsonAsync<List<Dictionary<string, object>>>("https://localhost:7043/Logic/all", cancellationToken);
-            ApplySearchFilter(); // Apply search filter after loading
-            return new TableData<Dictionary<string, object>> { Items = filteredVehicles, TotalItems = filteredVehicles.Count };
+            var pageNumber = state.Page + 1;
+            var pageSize = state.PageSize;
+
+            var url = $"https://localhost:7043/Logic/vehicles?pageNumber={pageNumber}&pageSize={pageSize}";
+
+            // Fetch the response
+            var response = await Http.GetFromJsonAsync<ApiResponse>(url, cancellationToken);
+
+            if (response != null)
+            {
+                allVehicles = response.Vehicles;
+                ApplySearchFilter(); // Apply search filter after loading
+
+                return new TableData<Dictionary<string, object>>
+                    {
+                        Items = filteredVehicles,
+                        TotalItems = response.TotalCount // Use correct total count from API
+                    };
+            }
+
+            return new TableData<Dictionary<string, object>> { Items = new List<Dictionary<string, object>>(), TotalItems = 0 };
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching vehicles: {ex.Message}");
             return new TableData<Dictionary<string, object>> { Items = new List<Dictionary<string, object>>(), TotalItems = 0 };
         }
+    }
+
+    // Helper class to match API response
+    private class ApiResponse
+    {
+        public int TotalCount { get; set; }
+        public List<Dictionary<string, object>> Vehicles { get; set; } = new();
     }
 
     private void ApplySearchFilter()

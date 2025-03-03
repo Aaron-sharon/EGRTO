@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Aaronbackend.Controllers
 {
     [ApiController]
-    [Route("[controller]")] // 🔹 Better practice: Use "api/logic" for clarity
-    public class LogicController : ControllerBase // 🔹 Use ControllerBase for API controllers
+    [Route("[controller]")] 
+    public class LogicController : ControllerBase
     {
         private readonly DBclass _context;
 
@@ -16,21 +17,19 @@ namespace Aaronbackend.Controllers
             _context = context;
         }
 
-        // ✅ Remove "Index()" OR properly define it if needed
-        [HttpGet("index")] // 🔹 Explicit route to avoid conflicts
+        // ✅ Welcome API
+        [HttpGet("index")]
         public IActionResult Index()
         {
-            return Ok("Welcome to the API"); // 🔹 Return JSON response instead of View()
+            return Ok(new { message = "Welcome to the API" }); // 🔹 JSON response for consistency
         }
 
         // ✅ Create a new vehicle
         [HttpPost("add")]
-        public async Task<ActionResult<string>> PostVehicle([FromBody] Vehicle vehicle)
+        public async Task<ActionResult> PostVehicle([FromBody] Vehicle vehicle)
         {
             if (vehicle == null)
-            {
                 return BadRequest("Vehicle cannot be null.");
-            }
 
             if (string.IsNullOrEmpty(vehicle.LicensePlate) ||
                 string.IsNullOrEmpty(vehicle.Model) ||
@@ -39,27 +38,32 @@ namespace Aaronbackend.Controllers
                 return BadRequest("All fields must be filled.");
             }
 
-            if (vehicle.RegistrationDate == default(DateTime))
-            {
-                vehicle.RegistrationDate = DateTime.Now;
-            }
+            vehicle.RegistrationDate = vehicle.RegistrationDate == default ? DateTime.Now : vehicle.RegistrationDate;
 
             _context.Vehicles.Add(vehicle);
             await _context.SaveChangesAsync();
 
-            return Ok("Request Submitted");
+            return CreatedAtAction(nameof(GetVehicle), new { id = vehicle.Id }, vehicle);
         }
 
-        // ✅ Get all vehicles
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<Vehicle>>> GetVehicles()
+        // ✅ Get vehicles with pagination
+        [HttpGet("vehicles")]
+        public async Task<ActionResult> GetVehicles([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
         {
-            var vehicles = await _context.Vehicles.ToListAsync();
-            if (vehicles == null || vehicles.Count == 0)
+            var totalRecords = await _context.Vehicles.CountAsync();
+            var vehicles = await _context.Vehicles
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            if (vehicles.Count == 0)
+                return NoContent();
+
+            return Ok(new
             {
-                return NotFound("No vehicles found.");
-            }
-            return Ok(vehicles);
+                TotalCount = totalRecords,
+                Vehicles = vehicles
+            });
         }
 
         // ✅ Get a specific vehicle by ID
@@ -68,9 +72,8 @@ namespace Aaronbackend.Controllers
         {
             var vehicle = await _context.Vehicles.FindAsync(id);
             if (vehicle == null)
-            {
                 return NotFound($"Vehicle with ID {id} not found.");
-            }
+
             return Ok(vehicle);
         }
 
@@ -80,31 +83,26 @@ namespace Aaronbackend.Controllers
         {
             var vehicle = await _context.Vehicles.FindAsync(id);
             if (vehicle == null)
-            {
                 return NotFound($"Vehicle with ID {id} not found.");
-            }
 
             _context.Vehicles.Remove(vehicle);
             await _context.SaveChangesAsync();
 
-            return NoContent(); // 🔹 Best practice: Return 204 No Content on deletion
+            return NoContent(); // 🔹 Best practice: 204 No Content for deletions
         }
 
-        [HttpPut("update/{id}")] // Define route
+        // ✅ Update a vehicle by ID
+        [HttpPut("update/{id}")]
         public async Task<IActionResult> PutVehicle(int id, [FromBody] Vehicle vehicle)
         {
             if (vehicle == null || id != vehicle.Id)
-            {
                 return BadRequest("Invalid vehicle data.");
-            }
 
             var existingVehicle = await _context.Vehicles.FindAsync(id);
             if (existingVehicle == null)
-            {
                 return NotFound($"Vehicle with ID {id} not found.");
-            }
 
-            // Update the existing vehicle with new data
+            // Update fields
             existingVehicle.LicensePlate = vehicle.LicensePlate;
             existingVehicle.Model = vehicle.Model;
             existingVehicle.Owner = vehicle.Owner;
@@ -115,10 +113,9 @@ namespace Aaronbackend.Controllers
             existingVehicle.Price = vehicle.Price;
             existingVehicle.OwnerEmail = vehicle.OwnerEmail;
 
-            await _context.SaveChangesAsync(); // Save changes
+            await _context.SaveChangesAsync();
 
-            return Ok(existingVehicle); // Return updated vehicle
+            return Ok(existingVehicle);
         }
-
     }
 }

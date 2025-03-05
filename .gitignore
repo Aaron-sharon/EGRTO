@@ -26,3 +26,7 @@
 /Aaronbackend/obj/Aaronbackend.csproj.nuget.dgspec.json
 /blazortest/blazortest.csproj.user
 /blazortest/blazortest.csproj
+/Aaronbackend/obj/Release/net9.0/Aaronbackend.AssemblyInfo.cs
+/Aaronbackend/obj/Release/net9.0/Aaronbackend.assets.cache
+/Aaronbackend/obj/Release/net9.0/Aaronbackend.AssemblyInfoInputs.cache
+/Aaronbackend/obj/Release/net9.0/Aaronbackend.GeneratedMSBuildEditorConfig.editorconfig

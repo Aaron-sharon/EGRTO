@@ -93,36 +93,43 @@
         DialogService.Show<AddVehicleDialog>("Edit Vehicle", parameters);
     }
 
+    private bool isLoading = false;
+
     private async Task<TableData<Dictionary<string, object>>> LoadVehicles(TableState state, CancellationToken cancellationToken)
     {
+        if (isLoading) // Prevent redundant API calls
+            return new TableData<Dictionary<string, object>> { Items = filteredVehicles, TotalItems = filteredVehicles.Count };
+
         try
         {
+            isLoading = true; // Set flag to prevent re-entry
+
             var pageNumber = state.Page + 1;
             var pageSize = state.PageSize;
 
             var url = $"https://localhost:7043/Logic/vehicles?pageNumber={pageNumber}&pageSize={pageSize}";
-
-            // Fetch the response
             var response = await Http.GetFromJsonAsync<ApiResponse>(url, cancellationToken);
 
             if (response != null)
             {
                 allVehicles = response.Vehicles;
-                ApplySearchFilter(); // Apply search filter after loading
-
-                return new TableData<Dictionary<string, object>>
-                    {
-                        Items = filteredVehicles,
-                        TotalItems = response.TotalCount // Use correct total count from API
-                    };
+                ApplySearchFilter();
             }
 
-            return new TableData<Dictionary<string, object>> { Items = new List<Dictionary<string, object>>(), TotalItems = 0 };
+            return new TableData<Dictionary<string, object>>
+                {
+                    Items = filteredVehicles,
+                    TotalItems = response?.TotalCount ?? 0
+                };
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching vehicles: {ex.Message}");
             return new TableData<Dictionary<string, object>> { Items = new List<Dictionary<string, object>>(), TotalItems = 0 };
+        }
+        finally
+        {
+            isLoading = false; // Reset flag
         }
     }
 
@@ -136,13 +143,8 @@
     private void ApplySearchFilter()
     {
         string query = searchQuery.ToLower();
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            filteredVehicles = allVehicles;
-        }
-        else
-        {
-            filteredVehicles = allVehicles.Where(vehicle =>
+        filteredVehicles = string.IsNullOrWhiteSpace(query) ? allVehicles :
+            allVehicles.Where(vehicle =>
                 vehicle["licensePlate"]?.ToString()?.ToLower().Contains(query) == true ||
                 vehicle["model"]?.ToString()?.ToLower().Contains(query) == true ||
                 vehicle["owner"]?.ToString()?.ToLower().Contains(query) == true ||
@@ -152,9 +154,10 @@
                 vehicle["vehicleName"]?.ToString()?.ToLower().Contains(query) == true ||
                 vehicle["price"]?.ToString()?.ToLower().Contains(query) == true
             ).ToList();
-        }
-        tableRef.ReloadServerData();
+
+        InvokeAsync(StateHasChanged); // Force UI refresh
     }
+
 
     private async Task DeleteVehicle(Dictionary<string, object> vehicle)
     {
@@ -188,11 +191,12 @@
 
     private async Task RefreshTable()
     {
-        if (tableRef != null)
+        if (tableRef != null && !isLoading)
         {
             await tableRef.ReloadServerData();
         }
     }
+
 
     private bool TryExtractId(object idObj, out int id)
     {

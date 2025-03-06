@@ -4,233 +4,256 @@
 @using System.Text.Json;
 
 <MudContainer Class="welcome-MudContainer">
-    <MudText Typo="Typo.h4" Align="Align.Start">Welcome Back</MudText>
-    <hr />
-    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-3">Vehicles Details</MudText>
+	<MudText Typo="Typo.h4" Align="Align.Start">Welcome Back</MudText>
+	<hr />
+	<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-3">Vehicles Details</MudText>
 
-    <MudGrid>
-        <MudItem xs="12" sm="8" md="10">
-            <MudTextField @bind-Value="searchQuery" Label="Search Vehicles" Clearable="true"
-                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                          Immediate="true" OnInput="ApplySearchFilter" />
-        </MudItem>
-        <MudItem xs="12" sm="6" md="2" Align="Align.End">
-            <MudButton OnClick="OpenAddVehicleDialog" Class="btn-add-vehicle">
-                Add Vehicle  <MudIcon Icon="@Icons.Material.Filled.Add" />
-            </MudButton>
-        </MudItem>
-    </MudGrid>
+	<MudGrid>
+		<MudItem xs="12" sm="8" md="10">
+			<MudTextField T="string" @bind-Value="searchQuery" Label="Search Vehicles" Clearable="true"
+						  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+						  Immediate="false" OnKeyUp="HandleKeyUp" HelperText="@normalText" HelperTextOnFocus="true" />
+		</MudItem>
+		<MudItem xs="12" sm="6" md="2" Align="Align.End">
+			<MudButton OnClick="OpenAddVehicleDialog" Class="btn-add-vehicle">
+				Add Vehicle  <MudIcon Icon="@Icons.Material.Filled.Add" />
+			</MudButton>
+		</MudItem>
+	</MudGrid>
 
-    <MudTable T="Dictionary<string, object>" ServerData="LoadVehicles" Hover="true" @ref="tableRef" 
-			  RowsPerPage="25" PageSizeOptions="new int[] { 5, 10, 20 }" Dense="true">
-        <HeaderContent>
-            <MudTh>License Plate</MudTh>
-            <MudTh>Model</MudTh>
-            <MudTh>Owner</MudTh>
-            <MudTh>Owner Address</MudTh>
-            <MudTh>Owner Contact Number</MudTh>
-            <MudTh>Owner Email</MudTh>
-            <MudTh>Vehicle Name</MudTh>
-            <MudTh>Price</MudTh>
-            <MudTh>Actions</MudTh>
-        </HeaderContent>
-        <RowTemplate Context="vehicle">
-            <MudTd DataLabel="#">@(GetRowNumber(vehicle))</MudTd>
-            <MudTd DataLabel="License Plate">@vehicle["licensePlate"]</MudTd>
-            <MudTd DataLabel="Model">@vehicle["model"]</MudTd>
-            <MudTd DataLabel="Owner">@vehicle["owner"]</MudTd>
-            <MudTd DataLabel="Owner Address">@vehicle["ownerAddress"]</MudTd>
-            <MudTd DataLabel="Owner Contact Number">@vehicle["ownerContactNumber"]</MudTd>
-            <MudTd DataLabel="Owner Email">@vehicle["ownerEmail"]</MudTd>
-            <MudTd DataLabel="Vehicle Name">@vehicle["vehicleName"]</MudTd>
-            <MudTd DataLabel="Price">@vehicle["price"]</MudTd>
-            <MudTd DataLabel="Actions">
-                <MudButton Color="Color.Primary" OnClick="() => EditVehicle(vehicle)">
-                    <MudIcon Icon="@Icons.Material.Filled.Edit" /> Edit
-                </MudButton>
-                <MudButton Color="Color.Error" OnClick="() => DeleteVehicle(vehicle)">
-                    <MudIcon Icon="@Icons.Material.Filled.Delete" /> Delete
-                </MudButton>
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
+	<MudTable T="Dictionary<string, object>" ServerData="LoadVehicles" Hover="true" @ref="tableRef"
+			  RowsPerPage="25" PageSizeOptions="new int[] { 5, 10, 20 }" Dense="true" Key="@filteredVehicles.Count">
+
+		<HeaderContent>
+			@* <MudTh>Sl.No</MudTh> *@
+			<MudTh>License Plate</MudTh>
+			<MudTh>Model</MudTh>
+			<MudTh>Owner</MudTh>
+			<MudTh>Owner Address</MudTh>
+			<MudTh>Owner Contact Number</MudTh>
+			<MudTh>Owner Email</MudTh>
+			<MudTh>Vehicle Name</MudTh>
+			<MudTh>Price</MudTh>
+			<MudTh>Actions</MudTh>
+		</HeaderContent>
+		<RowTemplate Context="vehicle">
+			@* <MudTd DataLabel="#">@(GetRowNumber(vehicle))</MudTd> *@
+			<MudTd DataLabel="License Plate">@vehicle["licensePlate"]</MudTd>
+			<MudTd DataLabel="Model">@vehicle["model"]</MudTd>
+			<MudTd DataLabel="Owner">@vehicle["owner"]</MudTd>
+			<MudTd DataLabel="Owner Address">@vehicle["ownerAddress"]</MudTd>
+			<MudTd DataLabel="Owner Contact Number">@vehicle["ownerContactNumber"]</MudTd>
+			<MudTd DataLabel="Owner Email">@vehicle["ownerEmail"]</MudTd>
+			<MudTd DataLabel="Vehicle Name">@vehicle["vehicleName"]</MudTd>
+			<MudTd DataLabel="Price">@vehicle["price"]</MudTd>
+			<MudTd DataLabel="Actions">
+				<MudButton Color="Color.Primary" OnClick="() => EditVehicle(vehicle)">
+					<MudIcon Icon="@Icons.Material.Filled.Edit" /> Edit
+				</MudButton>
+				<MudButton Color="Color.Error" OnClick="() => DeleteVehicle(vehicle)">
+					<MudIcon Icon="@Icons.Material.Filled.Delete" /> Delete
+				</MudButton>
+			</MudTd>
+		</RowTemplate>
+		<PagerContent>
+			<MudTablePager />
+		</PagerContent>
+	</MudTable>
 </MudContainer>
 
 @code {
-    private MudTable<Dictionary<string, object>> tableRef;
-    private string searchQuery = "";
-    private List<Dictionary<string, object>> allVehicles = new();
-    private List<Dictionary<string, object>> filteredVehicles = new();
-    private int GetRowNumber(Dictionary<string, object> vehicle)
-    {
-        var pageIndex = tableRef?.CurrentPage ?? 0;
-        var pageSize = tableRef?.RowsPerPage ?? 5;
-        var itemIndex = filteredVehicles.IndexOf(vehicle);
-        return pageIndex * pageSize + itemIndex + 1;
-    }
-    private void OpenAddVehicleDialog()
-    {
-        var parameters = new DialogParameters
-        {
-            { "OnVehicleAdded", EventCallback.Factory.Create(this, RefreshTable) }
-        };
+	private MudTable<Dictionary<string, object>> tableRef;
+	string normalText = "Press Enter key to Search";
+	private string searchQuery = "";
+	private List<Dictionary<string, object>> allVehicles = new();
+	private List<Dictionary<string, object>> filteredVehicles = new();
+	private int GetRowNumber(Dictionary<string, object> vehicle)
+	{
+		var pageIndex = tableRef?.CurrentPage ?? 0;
+		var pageSize = tableRef?.RowsPerPage ?? 5;
+		var itemIndex = filteredVehicles.IndexOf(vehicle);
+		return pageIndex * pageSize + itemIndex + 1;
+	}
+	private void OpenAddVehicleDialog()
+	{
+		var parameters = new DialogParameters
+		{
+			{ "OnVehicleAdded", EventCallback.Factory.Create(this, RefreshTable) }
+		};
 
-        DialogService.Show<AddVehicleDialog>("Add Vehicle", parameters);
-    }
+		DialogService.Show<AddVehicleDialog>("Add Vehicle", parameters);
+	}
 
-    private void EditVehicle(Dictionary<string, object> vehicle)
-    {
-        var parameters = new DialogParameters
-        {
-            { "Vehicle", vehicle }, // Pass the selected vehicle details
+	private void EditVehicle(Dictionary<string, object> vehicle)
+	{
+		var parameters = new DialogParameters
+		{
+			{ "Vehicle", vehicle }, // Pass the selected vehicle details
             { "IsEditMode", true }, // Indicate that this is an edit operation
             { "OnVehicleUpdated", EventCallback.Factory.Create(this, RefreshTable) }
-        };
+		};
 
-        DialogService.Show<AddVehicleDialog>("Edit Vehicle", parameters);
-    }
+		DialogService.Show<AddVehicleDialog>("Edit Vehicle", parameters);
+	}
 
-    private bool isLoading = false;
+	private bool isLoading = false;
 
-    private async Task<TableData<Dictionary<string, object>>> LoadVehicles(TableState state, CancellationToken cancellationToken)
-    {
-        if (isLoading) // Prevent redundant API calls
-            return new TableData<Dictionary<string, object>> { Items = filteredVehicles, TotalItems = filteredVehicles.Count };
+	private async Task<TableData<Dictionary<string, object>>> LoadVehicles(TableState state, CancellationToken cancellationToken)
+	{
+		if (isLoading) // Prevent redundant API calls
+			return new TableData<Dictionary<string, object>> { Items = filteredVehicles, TotalItems = filteredVehicles.Count };
 
-        try
-        {
-            isLoading = true; // Set flag to prevent re-entry
+		try
+		{
+			isLoading = true; // Set flag to prevent re-entry
 
-            var pageNumber = state.Page + 1;
-            var pageSize = state.PageSize;
+			var pageNumber = state.Page + 1;
+			var pageSize = state.PageSize;
 
-            var url = $"https://localhost:7043/Logic/vehicles?pageNumber={pageNumber}&pageSize={pageSize}";
-            var response = await Http.GetFromJsonAsync<ApiResponse>(url, cancellationToken);
+			var url = $"https://localhost:7043/Logic/vehicles?pageNumber={pageNumber}&pageSize={pageSize}";
+			var response = await Http.GetFromJsonAsync<ApiResponse>(url, cancellationToken);
 
-            if (response != null)
-            {
-                allVehicles = response.Vehicles;
-                ApplySearchFilter();
-            }
+			if (response != null)
+			{
+				allVehicles = response.Vehicles;
+				ApplySearchFilter();
+			}
 
-            return new TableData<Dictionary<string, object>>
-                {
-                    Items = filteredVehicles,
-                    TotalItems = response?.TotalCount ?? 0
-                };
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching vehicles: {ex.Message}");
-            return new TableData<Dictionary<string, object>> { Items = new List<Dictionary<string, object>>(), TotalItems = 0 };
-        }
-        finally
-        {
-            isLoading = false; // Reset flag
-        }
-    }
+			return new TableData<Dictionary<string, object>>
+				{
+					Items = filteredVehicles,
+					TotalItems = response?.TotalCount ?? 0
+				};
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error fetching vehicles: {ex.Message}");
+			return new TableData<Dictionary<string, object>> { Items = new List<Dictionary<string, object>>(), TotalItems = 0 };
+		}
+		finally
+		{
+			isLoading = false; // Reset flag
+		}
+	}
 
-    // Helper class to match API response
-    private class ApiResponse
-    {
-        public int TotalCount { get; set; }
-        public List<Dictionary<string, object>> Vehicles { get; set; } = new();
-    }
+	// Helper class to match API response
+	private class ApiResponse
+	{
+		public int TotalCount { get; set; }
+		public List<Dictionary<string, object>> Vehicles { get; set; } = new();
+	}
 
-    private void ApplySearchFilter()
-    {
-        string query = searchQuery.ToLower();
-        filteredVehicles = string.IsNullOrWhiteSpace(query) ? allVehicles :
-            allVehicles.Where(vehicle =>
-                vehicle["licensePlate"]?.ToString()?.ToLower().Contains(query) == true ||
-                vehicle["model"]?.ToString()?.ToLower().Contains(query) == true ||
-                vehicle["owner"]?.ToString()?.ToLower().Contains(query) == true ||
-                vehicle["ownerAddress"]?.ToString()?.ToLower().Contains(query) == true ||
-                vehicle["ownerContactNumber"]?.ToString()?.ToLower().Contains(query) == true ||
-                vehicle["ownerEmail"]?.ToString()?.ToLower().Contains(query) == true ||
-                vehicle["vehicleName"]?.ToString()?.ToLower().Contains(query) == true ||
-                vehicle["price"]?.ToString()?.ToLower().Contains(query) == true
-            ).ToList();
+	private async Task ApplySearchFilter()
+	{
+		string query = searchQuery.ToLower();
+		if (string.IsNullOrWhiteSpace(query))
+		{
+			filteredVehicles = allVehicles;
+		}
+		else
+		{
+			filteredVehicles = allVehicles.Where(vehicle =>
+				vehicle["licensePlate"]?.ToString()?.ToLower().Contains(query) == true ||
+				vehicle["model"]?.ToString()?.ToLower().Contains(query) == true ||
+				vehicle["owner"]?.ToString()?.ToLower().Contains(query) == true ||
+				vehicle["ownerAddress"]?.ToString()?.ToLower().Contains(query) == true ||
+				vehicle["ownerContactNumber"]?.ToString()?.ToLower().Contains(query) == true ||
+				vehicle["ownerEmail"]?.ToString()?.ToLower().Contains(query) == true ||
+				vehicle["vehicleName"]?.ToString()?.ToLower().Contains(query) == true ||
+				vehicle["price"]?.ToString()?.ToLower().Contains(query) == true
+			).ToList();
+		}
 
-        InvokeAsync(StateHasChanged); // Force UI refresh
-    }
-
-
-    private async Task DeleteVehicle(Dictionary<string, object> vehicle)
-    {
-        if (!vehicle.TryGetValue("id", out var idObj) || !TryExtractId(idObj, out int id))
-        {
-            Console.WriteLine("Error: Invalid or missing ID.");
-            return;
-        }
-
-        bool? confirmed = await DialogService.ShowMessageBox(
-            "Confirm Delete",
-            $"Are you sure you want to delete the vehicle with ID: {id}?",
-            yesText: "Delete", cancelText: "Cancel"
-        );
-
-        if (confirmed == true)
-        {
-            var response = await Http.DeleteAsync($"https://localhost:7043/Logic/delete/{id}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("Vehicle deleted successfully.");
-                await RefreshTable();
-            }
-            else
-            {
-                Console.WriteLine($"Delete failed. Status: {response.StatusCode}");
-            }
-        }
-    }
-
-    private async Task RefreshTable()
-    {
-        if (tableRef != null && !isLoading)
-        {
-            await tableRef.ReloadServerData();
-        }
-    }
+		// Reset pagination and reload the table
+		tableRef.SetRowsPerPage(25); // Or any default value
+		await InvokeAsync(() => tableRef.ReloadServerData());
+		// await InvokeAsync(StateHasChanged);
+	}
 
 
-    private bool TryExtractId(object idObj, out int id)
-    {
-        id = 0;
-        try
-        {
-            if (idObj is JsonElement jsonElement)
-            {
-                if (jsonElement.ValueKind == JsonValueKind.Number)
-                {
-                    id = jsonElement.GetInt32();
-                    return true;
-                }
-                else if (jsonElement.ValueKind == JsonValueKind.String && int.TryParse(jsonElement.GetString(), out int parsedId))
-                {
-                    id = parsedId;
-                    return true;
-                }
-            }
-            else if (idObj is int intId)
-            {
-                id = intId;
-                return true;
-            }
-            else if (idObj is string strId && int.TryParse(strId, out int parsedId))
-            {
-                id = parsedId;
-                return true;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error extracting ID: {ex.Message}");
-        }
-        return false;
-    }
+
+	private async Task DeleteVehicle(Dictionary<string, object> vehicle)
+	{
+		if (!vehicle.TryGetValue("id", out var idObj) || !TryExtractId(idObj, out int id))
+		{
+			Console.WriteLine("Error: Invalid or missing ID.");
+			return;
+		}
+
+		bool? confirmed = await DialogService.ShowMessageBox(
+			"Confirm Delete",
+			$"Are you sure you want to delete the vehicle with ID: {id}?",
+			yesText: "Delete", cancelText: "Cancel"
+		);
+
+		if (confirmed == true)
+		{
+			var response = await Http.DeleteAsync($"https://localhost:7043/Logic/delete/{id}");
+
+			if (response.IsSuccessStatusCode)
+			{
+				Console.WriteLine("Vehicle deleted successfully.");
+				await RefreshTable();
+			}
+			else
+			{
+				Console.WriteLine($"Delete failed. Status: {response.StatusCode}");
+			}
+		}
+	}
+
+	private async Task RefreshTable()
+	{
+		if (tableRef != null && !isLoading)
+		{
+			await InvokeAsync(StateHasChanged);
+			await tableRef.ReloadServerData();
+		}
+	}
+
+	private async Task HandleKeyUp(KeyboardEventArgs e)
+
+	{
+		if (e.Key == "Enter")
+		{
+			await ApplySearchFilter();
+		}
+	}
+
+
+	private bool TryExtractId(object idObj, out int id)
+	{
+		id = 0;
+		try
+		{
+			if (idObj is JsonElement jsonElement)
+			{
+				if (jsonElement.ValueKind == JsonValueKind.Number)
+				{
+					id = jsonElement.GetInt32();
+					return true;
+				}
+				else if (jsonElement.ValueKind == JsonValueKind.String && int.TryParse(jsonElement.GetString(), out int parsedId))
+				{
+					id = parsedId;
+					return true;
+				}
+			}
+			else if (idObj is int intId)
+			{
+				id = intId;
+				return true;
+			}
+			else if (idObj is string strId && int.TryParse(strId, out int parsedId))
+			{
+				id = parsedId;
+				return true;
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error extracting ID: {ex.Message}");
+		}
+		return false;
+	}
 }

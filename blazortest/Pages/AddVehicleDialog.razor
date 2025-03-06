@@ -89,6 +89,18 @@
 
         isSubmitting = false;
     }
+    private string? ValidateLicensePlate(string licensePlate)
+    {
+        string pattern = @"^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$";
+
+        if (string.IsNullOrWhiteSpace(licensePlate))
+            return "License Plate is required.";
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(licensePlate, pattern))
+            return "Invalid License Plate format. Expected format: AA20AA2020.";
+
+        return null; // Validation passed
+    }
 }
 
 
@@ -100,7 +112,13 @@
                     <MudText Typo="Typo.h5">@((IsEditMode) ? "Edit Vehicle" : "Add Vehicle")</MudText>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudTextField @bind-Value="vehicle.LicensePlate" Label="License Plate" Variant="Variant.Outlined" Placeholder="KA19MF8008" Required="true" />
+                    <MudTextField @bind-Value="vehicle.LicensePlate"
+                                  Label="License Plate"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="AA20AA2020"
+                                  Required="true"
+                                  Validation="ValidateLicensePlate"
+                                  Immediate="true" />
                     <MudTextField @bind-Value="vehicle.Model" Label="Model" Variant="Variant.Outlined" Placeholder="Ex - 2020" Required="true" />
                     <MudTextField @bind-Value="vehicle.Owner" Label="Name" Variant="Variant.Outlined" Placeholder="Ex - Sharu Bhai" Required="true" />
                     <MudTextField @bind-Value="vehicle.OwnerAddress" Label="Address" Variant="Variant.Outlined" Placeholder="Ex - Bali, Thailand" Required="true" />

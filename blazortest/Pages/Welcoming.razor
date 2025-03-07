@@ -22,7 +22,7 @@
 	</MudGrid>
 
 	<MudTable T="Dictionary<string, object>" ServerData="LoadVehicles" Hover="true" @ref="tableRef"
-			  RowsPerPage="25" PageSizeOptions="new int[] { 5, 10, 20 }" Dense="true" Key="@filteredVehicles.Count">
+			  RowsPerPage="5" PageSizeOptions="new int[] { 5, 10, 20 }" Dense="true" Key="@filteredVehicles.Count">
 
 		<HeaderContent>
 			@* <MudTh>Sl.No</MudTh> *@
@@ -164,8 +164,7 @@
 			).ToList();
 		}
 
-		// Reset pagination and reload the table
-		tableRef.SetRowsPerPage(25); // Or any default value
+		
 		await InvokeAsync(() => tableRef.ReloadServerData());
 		// await InvokeAsync(StateHasChanged);
 	}

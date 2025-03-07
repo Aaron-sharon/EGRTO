@@ -75,14 +75,21 @@ body {
     }
 
     .btn-Add-vehicle-container-box-close-button {
-        @include button-styles;
-            background-color: white;
-            color: red;
-            border: 1px solid red;
-            margin: 0 1rem;
+        background-color: $secondary-color !important;
+        color: $primary-color !important;
+        font-weight: bold !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+        transition: background-color 0.3s ease !important;
+
         &:hover {
-            background-color: red;
-            color: white;
+            background-color: $primary-color !important;
+            color: $secondary-color !important;
+            border: 1px solid $secondary-color;
+        }
+
+        &:disabled {
+            background-color: gray !important;
         }
     }
 }

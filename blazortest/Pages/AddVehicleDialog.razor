@@ -4,205 +4,192 @@
 @using Aaronbackend
 @using MudBlazor
 
-@inject HttpClient Http
-@inject NavigationManager Navigation
-@inject IDialogService DialogService
-@using Aaronbackend
-@using MudBlazor
-
 @code {
-    [Parameter] public EventCallback OnVehicleAdded { get; set; }
-    [Parameter] public EventCallback OnVehicleUpdated { get; set; }
-    [Parameter] public Dictionary<string, object>? Vehicle { get; set; }
-    [Parameter] public bool IsEditMode { get; set; } = false;
+	[Parameter] public EventCallback OnVehicleAdded { get; set; }
+	[Parameter] public EventCallback OnVehicleUpdated { get; set; }
+	[Parameter] public Dictionary<string, object>? Vehicle { get; set; }
+	[Parameter] public bool IsEditMode { get; set; } = false;
 
-    private Vehicle vehicle = new();
-    private bool isSubmitting = false;
-    private IDialogReference? _dialogReference; // ✅ Store dialog reference
+	private Vehicle vehicle = new();
+	private bool isSubmitting = false;
+	private IDialogReference? _dialogReference; // ✅ Store dialog reference
+	private Dictionary<string, bool> validationErrors = new(); // ✅ Track validation errors
+	private bool IsSubmitDisabled => HasErrors() || isSubmitting;
 
-    protected override void OnInitialized()
-    {
-        if (IsEditMode && Vehicle != null)
-        {
-            vehicle = new Vehicle
-                {
-                    Id = Vehicle.ContainsKey("id") && int.TryParse(Vehicle["id"]?.ToString(), out int vehicleId) ? vehicleId : 0,
-                    LicensePlate = Vehicle["licensePlate"]?.ToString() ?? "",
-                    Model = Vehicle["model"]?.ToString() ?? "",
-                    Owner = Vehicle["owner"]?.ToString() ?? "",
-                    OwnerAddress = Vehicle["ownerAddress"]?.ToString() ?? "",
-                    OwnerContactNumber = Vehicle["ownerContactNumber"]?.ToString() ?? "",
-                    OwnerEmail = Vehicle["ownerEmail"]?.ToString() ?? "",
-                    VehicleName = Vehicle["vehicleName"]?.ToString() ?? "",
-                    Price = float.TryParse(Vehicle["price"]?.ToString(), out float price) ? price : 0
-                };
-        }
-    }
+	protected override void OnInitialized()
+	{
+		if (IsEditMode && Vehicle != null)
+		{
+			vehicle = new Vehicle
+				{
+					Id = Vehicle.ContainsKey("id") && int.TryParse(Vehicle["id"]?.ToString(), out int vehicleId) ? vehicleId : 0,
+					LicensePlate = Vehicle["licensePlate"]?.ToString() ?? "",
+					Model = Vehicle["model"]?.ToString() ?? "",
+					Owner = Vehicle["owner"]?.ToString() ?? "",
+					OwnerAddress = Vehicle["ownerAddress"]?.ToString() ?? "",
+					OwnerContactNumber = Vehicle["ownerContactNumber"]?.ToString() ?? "",
+					OwnerEmail = Vehicle["ownerEmail"]?.ToString() ?? "",
+					VehicleName = Vehicle["vehicleName"]?.ToString() ?? "",
+					Price = float.TryParse(Vehicle["price"]?.ToString(), out float price) ? price : 0
+				};
+		}
+	}
 
-    public void SetDialogReference(IDialogReference dialogReference)
-    {
-        _dialogReference = dialogReference; // ✅ Store reference
-    }
+	public void SetDialogReference(IDialogReference dialogReference)
+	{
+		_dialogReference = dialogReference;
+	}
 
-    private async Task SubmitVehicle()
-    {
-        isSubmitting = true;
+	private async Task SubmitVehicle()
+	{
+		if (validationErrors.Values.Contains(true))
+		{
+			Console.WriteLine("Form contains validation errors. Cannot submit.");
+			return;
+		}
 
-        try
-        {
-            HttpResponseMessage response;
-            if (IsEditMode)
-            {
-                response = await Http.PutAsJsonAsync($"https://localhost:7043/Logic/update/{vehicle.Id}", vehicle);
-            }
-            else
-            {
-                response = await Http.PostAsJsonAsync("https://localhost:7043/Logic/add", vehicle);
-            }
+		isSubmitting = true;
+		try
+		{
+			HttpResponseMessage response;
+			if (IsEditMode)
+			{
+				response = await Http.PutAsJsonAsync($"https://localhost:7043/Logic/update/{vehicle.Id}", vehicle);
+			}
+			else
+			{
+				response = await Http.PostAsJsonAsync("https://localhost:7043/Logic/add", vehicle);
+			}
 
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine(IsEditMode ? "Vehicle updated successfully." : "Vehicle added successfully.");
-                vehicle = new Vehicle();
+			if (response.IsSuccessStatusCode)
+			{
+				Console.WriteLine(IsEditMode ? "Vehicle updated successfully." : "Vehicle added successfully.");
+				vehicle = new Vehicle();
 
-                if (IsEditMode)
-                {
-                    await OnVehicleUpdated.InvokeAsync();
-                }
-                else
-                {
-                    await OnVehicleAdded.InvokeAsync();
-                }
+				if (IsEditMode)
+				{
+					await OnVehicleUpdated.InvokeAsync();
+				}
+				else
+				{
+					await OnVehicleAdded.InvokeAsync();
+				}
 
-                _dialogReference?.Close(DialogResult.Ok(vehicle));
-            }
-            else
-            {
-                string errorMessage = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error: {errorMessage}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Exception: {ex.Message}");
-        }
+				_dialogReference?.Close(DialogResult.Ok(vehicle));
+			}
+			else
+			{
+				string errorMessage = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"Error: {errorMessage}");
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Exception: {ex.Message}");
+		}
 
-        isSubmitting = false;
-    }
-    private string? ValidateLicensePlate(string licensePlate)
-    {
-        string pattern = @"^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$";
+		isSubmitting = false;
+	}
 
-        if (string.IsNullOrWhiteSpace(licensePlate))
-            return "License Plate is required.";
+	private string? ValidateLicensePlate(string licensePlate)
+	{
+		string pattern = @"^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$";
+		bool hasError = string.IsNullOrWhiteSpace(licensePlate) || !System.Text.RegularExpressions.Regex.IsMatch(licensePlate, pattern);
+		validationErrors["LicensePlate"] = hasError; // ✅ Track error state
+		return hasError ? "Invalid License Plate format. Expected format: AA20AA2020." : null;
+	}
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(licensePlate, pattern))
-            return "Invalid License Plate format. Expected format: AA20AA2020.";
+	private string? ValidateModel(string model)
+	{
+		string pattern = @"\d{4}";
+		bool hasError = string.IsNullOrWhiteSpace(model) || !System.Text.RegularExpressions.Regex.IsMatch(model, pattern);
+		validationErrors["Model"] = hasError;
+		return hasError ? "Invalid Model. Expected format: 2000." : null;
+	}
 
-        return null; // Validation passed
-    }
+	private string? ValidateText(string owner)
+	{
+		string pattern = @"^[A-Za-z.\s_-]+$";
+		bool hasError = string.IsNullOrWhiteSpace(owner) || !System.Text.RegularExpressions.Regex.IsMatch(owner, pattern);
+		validationErrors["Owner"] = hasError;
+		return hasError ? "Invalid Input." : null;
+	}
 
-    private string? ValidateModel(string Model) {
-        string pattern = @"\d{4}";
-        if (string.IsNullOrWhiteSpace(Model))
-            return "License Plate is required.";
+	private string? ValidateTextAddress(string ownerAddress)
+	{
+		string pattern = @"^[A-Za-z0-9\s\[\]()_.-]+$";
+		bool hasError = string.IsNullOrWhiteSpace(ownerAddress) || !System.Text.RegularExpressions.Regex.IsMatch(ownerAddress, pattern);
+		validationErrors["OwnerAddress"] = hasError;
+		return hasError ? "Invalid Input. Only letters, numbers, spaces, hyphens, brackets, underscores, and periods are allowed." : null;
+	}
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(Model, pattern))
-            return "Invalid Model. Expected format: 2000.";
-        return null;
-    }
-    
-    private string? validateText(string Owner) {
-        string pattern = @"^[A-Za-z.\s_-]+$";
-        if (string.IsNullOrWhiteSpace(Owner))
-            return "Owner Name is required.";
+	private string? ValidatePhoneNumber(string ownerContactNumber)
+	{
+		string pattern = @"\d{10}";
+		bool hasError = string.IsNullOrWhiteSpace(ownerContactNumber) || !System.Text.RegularExpressions.Regex.IsMatch(ownerContactNumber, pattern);
+		validationErrors["OwnerContactNumber"] = hasError;
+		return hasError ? "Field should have 10 Digits." : null;
+	}
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(Owner, pattern))
-            return "Invalid Input. ";
-        return null;
-    }   
-    
-    private string? ValidateTextAddress(string ownerAddress)
-    {
-        string pattern = @"^[A-Za-z0-9\s\[\]()_.-]+$";
+	private string? ValidateEmail(string ownerEmail)
+	{
+		string pattern = @"^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$";
+		bool hasError = string.IsNullOrWhiteSpace(ownerEmail) || !System.Text.RegularExpressions.Regex.IsMatch(ownerEmail, pattern);
+		validationErrors["OwnerEmail"] = hasError;
+		return hasError ? "Invalid Email format." : null;
+	}
 
-        if (string.IsNullOrWhiteSpace(ownerAddress))
-            return "This field is required.";
+	private string? ValidatePrice(string price)
+	{
+		string pattern = @"\d{4}";
+		bool hasError = string.IsNullOrWhiteSpace(price) || !System.Text.RegularExpressions.Regex.IsMatch(price, pattern);
+		validationErrors["Price"] = hasError;
+		return hasError ? "Invalid Amount." : null;
+	}
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(ownerAddress, pattern))
-            return "Invalid Input. Only letters, numbers, spaces, hyphens, brackets, underscores, and periods are allowed.";
-
-        return null;
-    }
-
-    private string? ValidatePhoneNumber(string OwnerContactNumber)
-    {
-        string pattern = @"\d{10}";
-
-        if (string.IsNullOrWhiteSpace(OwnerContactNumber))
-            return "Phone Number is required.";
-
-        if (!System.Text.RegularExpressions.Regex.IsMatch(OwnerContactNumber, pattern))
-            return "Field should have 10 Digits";
-
-        return null;
-    }
-    
-    private string? ValidateEmail(string ownerEmail)
-    {
-        string pattern = @"^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$";
-
-        if (string.IsNullOrWhiteSpace(ownerEmail))
-            return "Email is required.";
-
-        if (!System.Text.RegularExpressions.Regex.IsMatch(ownerEmail, pattern))
-            return "Invalid Email format.";
-
-        return null; 
-    }
-
-    private string? ValidatePrice(string Price)
-    {
-        string pattern = @"\d{4}";
-        if (string.IsNullOrWhiteSpace(Price))
-            return "Invalid Amount.";
-
-        if (!System.Text.RegularExpressions.Regex.IsMatch(Price, pattern))
-            return "Invalid Amount";
-        return null;
-    }
+	// ✅ Check if there are any validation errors
+	private bool HasErrors() => validationErrors.Values.Contains(true);
 }
 
-
 <MudContainer Class="Add-vehicle-Container-box pb-4">
-    <MudGrid>
-        <MudItem>
-            <MudCard>
-                <MudCardHeader>
-                    <MudText Typo="Typo.h5">@((IsEditMode) ? "Edit Vehicle" : "Add Vehicle")</MudText>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudTextField @bind-Value="vehicle.LicensePlate"
-                                  Label="License Plate"
-                                  Variant="Variant.Outlined"
-                                  Placeholder="AA20AA2020"
-                                  Required="true"
-                                  Validation="ValidateLicensePlate"
-                                  Immediate="true" />
-                    <MudTextField @bind-Value="vehicle.Model" Label="Model" Variant="Variant.Outlined" Placeholder="Ex - 2020" Required="true" Validation="ValidateModel" Immediate="true" MaxLength="4"/>
-                    <MudTextField @bind-Value="vehicle.Owner" Label="Name" Variant="Variant.Outlined" Placeholder="Ex - Sharu Bhai" Required="true" Validation="validateText" Immediate="true"/>
-                    <MudTextField @bind-Value="vehicle.OwnerAddress" Label="Address" Variant="Variant.Outlined" Placeholder="Ex - Bali, Thailand" Required="true" Validation="ValidateTextAddress" Immediate="true" MaxLength="100" />
-                    <MudTextField @bind-Value="vehicle.OwnerContactNumber" Label="Contact Number" Variant="Variant.Outlined" Placeholder="Ex - 6900000069" Required="true" MaxLength="10" Validation="ValidatePhoneNumber" Immediate="true" />
-                    <MudTextField @bind-Value="vehicle.OwnerEmail" Label="Email" Variant="Variant.Outlined" Placeholder="Ex - you@you.com" Required="true" Validation="ValidateEmail" Immediate="true" />
-                    <MudTextField @bind-Value="vehicle.VehicleName" Label="Vehicle Name" Variant="Variant.Outlined" Placeholder="Ex - Royal Enfield Bullet" Required="true" Validation="ValidateTextAddress" Immediate="true" />
-                    <MudTextField @bind-Value="vehicle.Price" Label="Vehicle Price" Variant="Variant.Outlined" Placeholder="69,000" Required="true" Validation="ValidatePrice" Immediate="true" />
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton OnClick="SubmitVehicle" Class="btn-Add-vehicle-container-box-submit-button" Disabled="@isSubmitting" FullWidth="true">
-                        @((IsEditMode) ? "Update Vehicle" : "Save Vehicle")
-                    </MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
+	<MudGrid>
+		<MudItem>
+			<MudCard>
+				<MudCardHeader>
+					<MudText Typo="Typo.h5">@((IsEditMode) ? "Edit Vehicle" : "Add Vehicle")</MudText>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudTextField @bind-Value="vehicle.LicensePlate"
+								  Label="License Plate"
+								  Variant="Variant.Outlined"
+								  Placeholder="AA20AA2020"
+								  Required="true"
+								  Validation="ValidateLicensePlate"
+								  Immediate="true" />
+
+					<MudTextField @bind-Value="vehicle.Model" Label="Model" Variant="Variant.Outlined" Placeholder="Ex - 2020" Required="true" Validation="ValidateModel" Immediate="true" MaxLength="4" />
+
+					<MudTextField @bind-Value="vehicle.Owner" Label="Name" Variant="Variant.Outlined" Placeholder="Ex - Sharu Bhai" Required="true" Validation="ValidateText" Immediate="true" />
+
+					<MudTextField @bind-Value="vehicle.OwnerAddress" Label="Address" Variant="Variant.Outlined" Placeholder="Ex - Bali, Thailand" Required="true" Validation="ValidateTextAddress" Immediate="true" MaxLength="100" />
+
+					<MudTextField @bind-Value="vehicle.OwnerContactNumber" Label="Contact Number" Variant="Variant.Outlined" Placeholder="Ex - 6900000069" Required="true" MaxLength="10" Validation="ValidatePhoneNumber" Immediate="true" />
+
+					<MudTextField @bind-Value="vehicle.OwnerEmail" Label="Email" Variant="Variant.Outlined" Placeholder="Ex - you@you.com" Required="true" Validation="ValidateEmail" Immediate="true" />
+
+					<MudTextField @bind-Value="vehicle.VehicleName" Label="Vehicle Name" Variant="Variant.Outlined" Placeholder="Ex - Royal Enfield Bullet" Required="true" Validation="ValidateTextAddress" Immediate="true" />
+
+					<MudTextField @bind-Value="vehicle.Price" Label="Vehicle Price" Variant="Variant.Outlined" Placeholder="69,000" Required="true" Validation="ValidatePrice" Immediate="true" />
+				</MudCardContent>
+				<MudCardActions>
+					<MudButton OnClick="SubmitVehicle"
+							   Disabled="IsSubmitDisabled"
+							   FullWidth="true"
+							   Class="btn-Add-vehicle-container-box-close-button">
+						@((IsEditMode) ? "Update Vehicle" : "Save Vehicle")
+					</MudButton>
+				</MudCardActions>
+			</MudCard>
+		</MudItem>
+	</MudGrid>
 </MudContainer>

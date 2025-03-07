@@ -101,6 +101,76 @@
 
         return null; // Validation passed
     }
+
+    private string? ValidateModel(string Model) {
+        string pattern = @"\d{4}";
+        if (string.IsNullOrWhiteSpace(Model))
+            return "License Plate is required.";
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(Model, pattern))
+            return "Invalid Model. Expected format: 2000.";
+        return null;
+    }
+    
+    private string? validateText(string Owner) {
+        string pattern = @"^[A-Za-z.\s_-]+$";
+        if (string.IsNullOrWhiteSpace(Owner))
+            return "Owner Name is required.";
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(Owner, pattern))
+            return "Invalid Input. ";
+        return null;
+    }   
+    
+    private string? ValidateTextAddress(string ownerAddress)
+    {
+        string pattern = @"^[A-Za-z0-9\s\[\]()_.-]+$";
+
+        if (string.IsNullOrWhiteSpace(ownerAddress))
+            return "This field is required.";
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(ownerAddress, pattern))
+            return "Invalid Input. Only letters, numbers, spaces, hyphens, brackets, underscores, and periods are allowed.";
+
+        return null;
+    }
+
+    private string? ValidatePhoneNumber(string OwnerContactNumber)
+    {
+        string pattern = @"\d{10}";
+
+        if (string.IsNullOrWhiteSpace(OwnerContactNumber))
+            return "Phone Number is required.";
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(OwnerContactNumber, pattern))
+            return "Field should have 10 Digits";
+
+        return null;
+    }
+    
+    private string? ValidateEmail(string ownerEmail)
+    {
+        string pattern = @"^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$";
+
+        if (string.IsNullOrWhiteSpace(ownerEmail))
+            return "Email is required.";
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(ownerEmail, pattern))
+            return "Invalid Email format.";
+
+        return null; 
+    }
+
+    private string? ValidatePrice(string Price)
+    {
+        string pattern = @"\d{4}";
+        if (string.IsNullOrWhiteSpace(Price))
+            return "Invalid Amount.";
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(Price, pattern))
+            return "Invalid Amount";
+        return null;
+    }
 }
 
 
@@ -119,13 +189,13 @@
                                   Required="true"
                                   Validation="ValidateLicensePlate"
                                   Immediate="true" />
-                    <MudTextField @bind-Value="vehicle.Model" Label="Model" Variant="Variant.Outlined" Placeholder="Ex - 2020" Required="true" />
-                    <MudTextField @bind-Value="vehicle.Owner" Label="Name" Variant="Variant.Outlined" Placeholder="Ex - Sharu Bhai" Required="true" />
-                    <MudTextField @bind-Value="vehicle.OwnerAddress" Label="Address" Variant="Variant.Outlined" Placeholder="Ex - Bali, Thailand" Required="true" />
-                    <MudTextField @bind-Value="vehicle.OwnerContactNumber" Label="Contact Number" Variant="Variant.Outlined" Placeholder="Ex - 6900000069" Required="true" />
-                    <MudTextField @bind-Value="vehicle.OwnerEmail" Label="Email" Variant="Variant.Outlined" Placeholder="Ex - you@you.com" Required="true" />
-                    <MudTextField @bind-Value="vehicle.VehicleName" Label="Vehicle Name" Variant="Variant.Outlined" Placeholder="Ex - Royal Enfield Bullet" Required="true" />
-                    <MudTextField @bind-Value="vehicle.Price" Label="Vehicle Price" Variant="Variant.Outlined" Placeholder="69,000" Required="true" />
+                    <MudTextField @bind-Value="vehicle.Model" Label="Model" Variant="Variant.Outlined" Placeholder="Ex - 2020" Required="true" Validation="ValidateModel" Immediate="true" MaxLength="4"/>
+                    <MudTextField @bind-Value="vehicle.Owner" Label="Name" Variant="Variant.Outlined" Placeholder="Ex - Sharu Bhai" Required="true" Validation="validateText" Immediate="true"/>
+                    <MudTextField @bind-Value="vehicle.OwnerAddress" Label="Address" Variant="Variant.Outlined" Placeholder="Ex - Bali, Thailand" Required="true" Validation="ValidateTextAddress" Immediate="true" MaxLength="100" />
+                    <MudTextField @bind-Value="vehicle.OwnerContactNumber" Label="Contact Number" Variant="Variant.Outlined" Placeholder="Ex - 6900000069" Required="true" MaxLength="10" Validation="ValidatePhoneNumber" Immediate="true" />
+                    <MudTextField @bind-Value="vehicle.OwnerEmail" Label="Email" Variant="Variant.Outlined" Placeholder="Ex - you@you.com" Required="true" Validation="ValidateEmail" Immediate="true" />
+                    <MudTextField @bind-Value="vehicle.VehicleName" Label="Vehicle Name" Variant="Variant.Outlined" Placeholder="Ex - Royal Enfield Bullet" Required="true" Validation="ValidateTextAddress" Immediate="true" />
+                    <MudTextField @bind-Value="vehicle.Price" Label="Vehicle Price" Variant="Variant.Outlined" Placeholder="69,000" Required="true" Validation="ValidatePrice" Immediate="true" />
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton OnClick="SubmitVehicle" Class="btn-Add-vehicle-container-box-submit-button" Disabled="@isSubmitting" FullWidth="true">

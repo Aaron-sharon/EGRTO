@@ -30,3 +30,7 @@
 /Aaronbackend/obj/Release/net9.0/Aaronbackend.assets.cache
 /Aaronbackend/obj/Release/net9.0/Aaronbackend.AssemblyInfoInputs.cache
 /Aaronbackend/obj/Release/net9.0/Aaronbackend.GeneratedMSBuildEditorConfig.editorconfig
+/Aaronbackend/bin/Debug/net9.0/Aaronbackend.deps.json
+/Aaronbackend/bin/Debug/net9.0/Microsoft.Bcl.AsyncInterfaces.dll
+/Aaronbackend/obj/Debug/net9.0/Aaronbackend.MvcApplicationPartsAssemblyInfo.cs
+/Aaronbackend/obj/Aaronbackend.csproj.nuget.g.props

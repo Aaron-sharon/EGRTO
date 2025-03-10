@@ -1,5 +1,7 @@
-﻿using AaronBackend.Models;
+﻿using Aaronbackend;
+using AaronBackend.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AaronBackend.Controllers
 {
@@ -7,53 +9,82 @@ namespace AaronBackend.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private readonly DBclass _context;
         private static List<User> users = new(); // Temporary in-memory storage
-
-        [HttpPost("signup")]
-        public IActionResult Signup([FromBody] User user)
+        public AuthController(DBclass context)
         {
-            if (users.Any(u => u.Username == user.Username))
-            {
-                return BadRequest("User already exists.");
-            }
-
-            user.Id = users.Count + 1;
-            users.Add(user);
-            return Ok("User registered successfully.");
+            _context = context;
         }
 
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] User user)
+        [HttpPost("signup")]
+        public async Task<IActionResult> Register([FromBody] User model)
         {
-            var existingUser = users.FirstOrDefault(u => u.Username == user.Username && u.PasswordHash == user.PasswordHash);
-            if (existingUser == null)
+            try
             {
-                return Unauthorized("Invalid username or password.");
+                if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+                {
+                    return BadRequest("User already exists.");
+                }
+
+                _context.Users.Add(model);
+                await _context.SaveChangesAsync();
+
+                Console.WriteLine("User registered successfully."); // ✅ Log success
+                return Ok("User registered successfully.");
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}"); // ✅ Log error
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
 
-            // Store session
-            HttpContext.Session.SetString("UserId", existingUser.Id.ToString());
-            HttpContext.Session.SetString("Username", existingUser.Username);
 
-            return Ok(new { Message = "Login successful." });
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] User loginRequest)
+        {
+            try
+            {
+                // Check if user exists
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == loginRequest.Email && u.PasswordHash == loginRequest.PasswordHash);
+
+                if (user == null)
+                {
+                    return Unauthorized("Invalid email or password.");
+                }
+
+                // Store user info in session
+                HttpContext.Session.SetString("UserId", user.Id.ToString());
+                HttpContext.Session.SetString("Username", user.Username);
+
+                return Ok(new { Message = "Login successful.", UserId = user.Id });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
         }
 
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear();
-            return Ok("Logged out successfully.");
+            HttpContext.Session.Clear(); // ✅ Clears all session data
+            return Ok(new { Message = "User logged out successfully." });
         }
 
         [HttpGet("check-session")]
         public IActionResult CheckSession()
         {
-            var username = HttpContext.Session.GetString("Username");
-            if (string.IsNullOrEmpty(username))
+            var userId = HttpContext.Session.GetString("UserId");
+
+            if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized("Session expired or not found.");
+                return Unauthorized("Session expired or user not logged in.");
             }
-            return Ok(new { Username = username });
+
+            return Ok(new { Message = "User is logged in.", UserId = userId });
         }
     }
 }

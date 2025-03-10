@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace Aaronbackend.Controllers
 {
     [ApiController]
-    [Route("[controller]")] 
+    [Route("[controller]")]
     public class LogicController : ControllerBase
     {
         private readonly DBclass _context;
@@ -19,6 +16,7 @@ namespace Aaronbackend.Controllers
 
         // ✅ Welcome API
         [HttpGet("index")]
+        [SessionAuthorization]
         public IActionResult Index()
         {
             return Ok(new { message = "Welcome to the API" }); // 🔹 JSON response for consistency
@@ -26,6 +24,7 @@ namespace Aaronbackend.Controllers
 
         // ✅ Create a new vehicle
         [HttpPost("add")]
+        [SessionAuthorization]
         public async Task<ActionResult> PostVehicle([FromBody] Vehicle vehicle)
         {
             if (vehicle == null)
@@ -48,6 +47,7 @@ namespace Aaronbackend.Controllers
 
         // ✅ Get vehicles with pagination
         [HttpGet("vehicles")]
+        [SessionAuthorization]
         public async Task<ActionResult> GetVehicles([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
         {
             var totalRecords = await _context.Vehicles.CountAsync();
@@ -68,6 +68,7 @@ namespace Aaronbackend.Controllers
 
         // ✅ Get a specific vehicle by ID
         [HttpGet("{id}")]
+        [SessionAuthorization]
         public async Task<ActionResult<Vehicle>> GetVehicle(int id)
         {
             var vehicle = await _context.Vehicles.FindAsync(id);
@@ -79,6 +80,7 @@ namespace Aaronbackend.Controllers
 
         // ✅ Delete a vehicle by ID
         [HttpDelete("delete/{id}")]
+        [SessionAuthorization]
         public async Task<IActionResult> DeleteVehicle(int id)
         {
             var vehicle = await _context.Vehicles.FindAsync(id);
@@ -93,6 +95,7 @@ namespace Aaronbackend.Controllers
 
         // ✅ Update a vehicle by ID
         [HttpPut("update/{id}")]
+        [SessionAuthorization]
         public async Task<IActionResult> PutVehicle(int id, [FromBody] Vehicle vehicle)
         {
             if (vehicle == null || id != vehicle.Id)

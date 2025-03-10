@@ -1,7 +1,6 @@
 using Aaronbackend;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +30,17 @@ builder.Services.AddCors(options =>
         });
 });
 
+//session services
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddControllers();
 var app = builder.Build();
 
 // Enable Swagger in Development Mode
@@ -43,7 +53,7 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty; // Swagger at root URL
     });
 }
-
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseCors(MyAllowSpecificOrigins); // Enable CORS Middleware
 app.UseAuthorization();

@@ -1,1 +1,41 @@
-﻿
+﻿@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<MudAppBar Elevation="1" Class="nav-container">
+    <!-- Left Side: App Name -->
+    <MudText Typo="Typo.h5" Class="nav-title">MyApp</MudText>
+
+    <!-- Center: Icons -->
+    <MudSpacer />
+    <div class="nav-icons">
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" OnClick="OpenGitHub" />
+        <MudIconButton Icon="@Icons.Material.Filled.Link" OnClick="OpenLink" />
+    </div>
+
+    <!-- Right Side: Logout Button -->
+    <MudSpacer />
+    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="Logout">
+        Logout
+    </MudButton>
+</MudAppBar>
+
+@code {
+    private void OpenGitHub()
+    {
+        // Open GitHub in a new tab
+        var githubUrl = "https://github.com/Aaron-sharon/EGRTO";
+        JS.InvokeVoidAsync("window.open", githubUrl, "_blank");
+    }
+
+    private void OpenLink()
+    {
+        var linkUrl = "https://localhost:7043/index.html";
+        JS.InvokeVoidAsync("window.open", linkUrl, "_blank");
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "isAuthenticated");
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

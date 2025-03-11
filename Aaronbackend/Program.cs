@@ -1,7 +1,6 @@
 using Aaronbackend;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +29,13 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod();
         });
 });
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout duration
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -45,6 +51,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseSession();
 app.UseCors(MyAllowSpecificOrigins); // Enable CORS Middleware
 app.UseAuthorization();
 app.MapControllers();

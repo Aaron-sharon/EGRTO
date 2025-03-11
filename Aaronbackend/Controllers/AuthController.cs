@@ -1,4 +1,6 @@
-﻿using Aaronbackend;
+﻿using System.Security.Cryptography;
+using System.Text;
+using Aaronbackend;
 using AaronBackend.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +25,7 @@ namespace AaronBackend.Controllers
             {
                 return BadRequest("User already exists.");
             }
-
+            user.PasswordHash = HashPassword(user.PasswordHash);
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
@@ -33,8 +35,10 @@ namespace AaronBackend.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] User user)
         {
-            var existingUser = users.FirstOrDefault(u => u.Username == user.Username && u.PasswordHash == user.PasswordHash);
-            if (existingUser == null)
+            var existingUser = _context.Users
+    .FirstOrDefault(u => u.Username == user.Username);
+
+            if (existingUser == null || existingUser.PasswordHash != HashPassword(user.PasswordHash))
             {
                 return Unauthorized("Invalid username or password.");
             }
@@ -63,5 +67,12 @@ namespace AaronBackend.Controllers
             }
             return Ok(new { Username = username });
         }
+        private string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
+        }
+
     }
 }

@@ -7,9 +7,9 @@
 <div class="login-container">
     <div class="login-form">
         <MudCard Class="login-card">
-            <MudCardHeader>
+            <MudCardHeader Class="login-header">
                 <div class="login-logo">
-                    <img src="~/icon-192.png" alt="Logo" class="login-logo-image" />
+                    <img src="/EG_LOGO.jpg" alt="Logo" class="signup-logo" />
                 </div>
                 <MudText Typo="Typo.h4" Class="text-center">Login</MudText>
             </MudCardHeader>
@@ -21,69 +21,75 @@
                               Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
             </MudCardContent>
 
-            <MudCardActions Class="justify-center">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginUser">Login</MudButton>
+            <MudCardActions>
+				<MudButton Class="btn-primary-button" OnClick="LoginUser">
+					Login
+				</MudButton>
             </MudCardActions>
+
             <MudDivider />
-            <MudText Align="Align.Center">Don't have an Account? <MudLink Href="/signup">Sign up</MudLink></MudText>
+            <MudText Align="Align.Center">
+                Don't have an Account? <MudLink Href="/signup">Sign up</MudLink>
+            </MudText>
         </MudCard>
     </div>
 </div>
 
 
+
 @code {
-    private string username = "";
-    private string password = "";
+	private string username = "";
+	private string password = "";
 
-    private async Task LoginUser()
-    {
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-        {
-            await JS.InvokeVoidAsync("Swal.fire", new
-            {
-                title = "Error",
-                text = "Please fill in all fields.",
-                icon = "error"
-            });
-            return;
-        }
+	private async Task LoginUser()
+	{
+		if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+		{
+			await JS.InvokeVoidAsync("Swal.fire", new
+			{
+				title = "Error",
+				text = "Please fill in all fields.",
+				icon = "error"
+			});
+			return;
+		}
 
-        var loginData = new
-        {
-            Username = username,
-            PasswordHash = password
-        };
+		var loginData = new
+		{
+			Username = username,
+			PasswordHash = password
+		};
 
-        var response = await Http.PostAsJsonAsync("api/auth/login", loginData, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+		var response = await Http.PostAsJsonAsync("api/auth/login", loginData, new JsonSerializerOptions
+			{
+				PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+			});
 
-        if (response.IsSuccessStatusCode)
-        {
-            await JS.InvokeVoidAsync("localStorage.setItem", "isAuthenticated", "true");
+		if (response.IsSuccessStatusCode)
+		{
+			await JS.InvokeVoidAsync("localStorage.setItem", "isAuthenticated", "true");
 
-            await JS.InvokeVoidAsync("Swal.fire", new
-            {
-                title = "Success!",
-                text = "Login successful.",
-                icon = "success",
-                showConfirmButton = false,
-                timer = 2000
-            });
+			await JS.InvokeVoidAsync("Swal.fire", new
+			{
+				title = "Success!",
+				text = "Login successful.",
+				icon = "success",
+				showConfirmButton = false,
+				timer = 2000
+			});
 
-            await Task.Delay(500);  // Add a short delay
-            Navigation.NavigateTo("/Welcoming", forceLoad: true);
-        }
-        else
-        {
-            string errorMessage = await response.Content.ReadAsStringAsync();
-            await JS.InvokeVoidAsync("Swal.fire", new
-            {
-                title = "Login Failed",
-                text = errorMessage,
-                icon = "error"
-            });
-        }
-    }
+			await Task.Delay(500);  // Add a short delay
+			Navigation.NavigateTo("/Welcoming", forceLoad: true);
+		}
+		else
+		{
+			string errorMessage = await response.Content.ReadAsStringAsync();
+			await JS.InvokeVoidAsync("Swal.fire", new
+			{
+				title = "Login Failed",
+				text = errorMessage,
+				icon = "error"
+			});
+		}
+	}
 }

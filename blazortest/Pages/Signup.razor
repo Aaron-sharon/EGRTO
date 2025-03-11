@@ -7,11 +7,12 @@
 <MudContainer Class="signup-container">
     <div class="signup-form">
         <MudCard Class="signup-card">
-            <MudCardHeader>
-                <div class="logo-container">
-                    <img src="~/EG_LOGO.jpg" alt="Logo" class="signup-logo" />
-                </div>
-                <MudText Typo="Typo.h4" Class="text-start">Create an Account</MudText>
+            <div class="logo-container">
+                <img src="/EG_LOGO.jpg" alt="Logo" class="signup-logo" />
+            </div>
+
+            <MudCardHeader Class="signup-header">
+                <MudText Typo="Typo.h4" Class="text-center">Create an Account</MudText>
             </MudCardHeader>
 
             <MudCardContent>
@@ -20,8 +21,8 @@
                 <MudTextField Label="Confirm Password" @bind-Value="confirmPassword" InputType="InputType.Password" Required="true" />
             </MudCardContent>
 
-            <MudCardActions Class="justify-center">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignupUser">Sign Up</MudButton>
+            <MudCardActions>
+                <MudButton Class="btn-primary-button" OnClick="SignupUser">Sign Up</MudButton>
             </MudCardActions>
 
             <div class="login-link text-center">
@@ -30,6 +31,7 @@
         </MudCard>
     </div>
 </MudContainer>
+
 
 @code {
     private string username = "";

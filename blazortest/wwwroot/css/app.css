@@ -8,7 +8,7 @@ body {
 }
 
 .swal2-container {
-  z-index: 9999 !important; /* Ensures SweetAlert is always on top */
+  z-index: 9999 !important;
 }
 
 .welcome-MudContainer {

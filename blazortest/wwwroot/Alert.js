@@ -5,9 +5,10 @@
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Yes, delete it!",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        target: '#alert-container' // 👈 Add this
     }).then((result) => {
-        console.log("SweetAlert result:", result); // 👈 Add this
+        console.log("SweetAlert result:", result);
         return result.isConfirmed;
     });
 };
@@ -18,7 +19,8 @@ window.showSuccessAlert = function () {
         title: 'Success!',
         text: 'Vehicle deleted successfully.',
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
+        target: '#alert-container' // 👈 Add this
     });
 };
 
@@ -28,7 +30,8 @@ window.showErrorAlert = function () {
         title: 'Error!',
         text: 'Failed to delete the vehicle. Please try again.',
         timer: 3000,
-        showConfirmButton: false
+        showConfirmButton: false,
+        target: '#alert-container' // 👈 Add this
     });
 };
 

@@ -3,6 +3,7 @@
 @inject IDialogService DialogService
 @using Aaronbackend
 @using MudBlazor
+@inject IJSRuntime JS
 
 @code {
 	[Parameter] public EventCallback OnVehicleAdded { get; set; }
@@ -45,6 +46,12 @@
 		if (validationErrors.Values.Contains(true))
 		{
 			Console.WriteLine("Form contains validation errors. Cannot submit.");
+			await JS.InvokeVoidAsync("Swal.fire", new
+			{
+				title = "Validation Error",
+				text = "Please correct the errors before submitting.",
+				icon = "error"
+			});
 			return;
 		}
 
@@ -75,17 +82,54 @@
 					await OnVehicleAdded.InvokeAsync();
 				}
 
+				// Close the dialog first
 				_dialogReference?.Close(DialogResult.Ok(vehicle));
+
+				// 🕒 Add delay before showing the SweetAlert
+				await Task.Delay(1000); // 1 second delay
+
+				await JS.InvokeVoidAsync("Swal.fire", new
+				{
+					title = "Success!",
+					text = IsEditMode ? "Vehicle updated successfully." : "Vehicle added successfully.",
+					icon = "success"
+				});
 			}
 			else
 			{
 				string errorMessage = await response.Content.ReadAsStringAsync();
 				Console.WriteLine($"Error: {errorMessage}");
+
+				// Close the dialog before showing the error
+				_dialogReference?.Close(DialogResult.Cancel());
+
+				// Delay before showing error alert
+				await Task.Delay(1000);
+
+				await JS.InvokeVoidAsync("Swal.fire", new
+				{
+					title = "Error!",
+					text = errorMessage,
+					icon = "error"
+				});
 			}
 		}
 		catch (Exception ex)
 		{
 			Console.WriteLine($"Exception: {ex.Message}");
+
+			// Close the dialog before showing unexpected error
+			_dialogReference?.Close(DialogResult.Cancel());
+
+			// Delay before showing error alert
+			await Task.Delay(1000);
+
+			await JS.InvokeVoidAsync("Swal.fire", new
+			{
+				title = "Unexpected Error",
+				text = "Something went wrong. Please try again.",
+				icon = "error"
+			});
 		}
 
 		isSubmitting = false;

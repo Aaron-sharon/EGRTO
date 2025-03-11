@@ -1,32 +1,44 @@
 ﻿@page "/signup"
+@inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JS
-@inject NavigationManager Navigation
+
 
 <MudContainer Class="signup-container">
-    <MudCard>
-        <MudCardHeader>
-            <MudText Typo="Typo.h4" Class="text-center">Admin Signup</MudText>
-        </MudCardHeader>
+    <div class="signup-form">
+        <MudCard Class="signup-card">
+            <MudCardHeader>
+                <div class="logo-container">
+                    <img src="~/EG_LOGO.jpg" alt="Logo" class="signup-logo" />
+                </div>
+                <MudText Typo="Typo.h4" Class="text-start">Create an Account</MudText>
+            </MudCardHeader>
 
-        <MudCardContent>
-            <MudTextField Label="Username" @bind-Value="username" Required="true" />
-            <MudTextField Label="Password" @bind-Value="password" InputType="InputType.Password" Required="true" />
-        </MudCardContent>
+            <MudCardContent>
+                <MudTextField Label="Username" @bind-Value="username" Required="true" />
+                <MudTextField Label="Password" @bind-Value="password" InputType="InputType.Password" Required="true" />
+                <MudTextField Label="Confirm Password" @bind-Value="confirmPassword" InputType="InputType.Password" Required="true" />
+            </MudCardContent>
 
-        <MudCardActions Class="justify-end">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignupUser">Signup</MudButton>
-        </MudCardActions>
-    </MudCard>
+            <MudCardActions Class="justify-center">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignupUser">Sign Up</MudButton>
+            </MudCardActions>
+
+            <div class="login-link text-center">
+                <MudLink Href="/" Class="signup-link-text">Already have an account? Log in</MudLink>
+            </div>
+        </MudCard>
+    </div>
 </MudContainer>
 
 @code {
     private string username = "";
     private string password = "";
+    private string confirmPassword = "";
 
     private async Task SignupUser()
     {
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
         {
             await JS.InvokeVoidAsync("Swal.fire", new
             {
@@ -37,12 +49,18 @@
             return;
         }
 
-        var signupData = new
+        if (password != confirmPassword)
         {
-            Username = username,
-            PasswordHash = password
-        };
+            await JS.InvokeVoidAsync("Swal.fire", new
+            {
+                title = "Error",
+                text = "Passwords do not match.",
+                icon = "error"
+            });
+            return;
+        }
 
+        var signupData = new { Username = username, PasswordHash = password };
         var response = await Http.PostAsJsonAsync("https://localhost:7043/api/auth/signup", signupData);
 
         if (response.IsSuccessStatusCode)
@@ -54,7 +72,7 @@
                 icon = "success"
             });
 
-            Navigation.NavigateTo("/login", forceLoad: true);
+            Navigation.NavigateTo("/", forceLoad: true);
         }
         else
         {

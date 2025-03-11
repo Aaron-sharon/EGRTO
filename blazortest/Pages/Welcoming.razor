@@ -27,7 +27,7 @@
 	</MudGrid>
 
 	<MudTable T="Dictionary<string, object>" ServerData="LoadVehicles" Hover="true" @ref="tableRef"
-			  RowsPerPage="5" PageSizeOptions="new int[] { 5, 10, 20 }" Dense="true" Key="@filteredVehicles.Count">
+			  RowsPerPage="10" PageSizeOptions="new int[] { 5, 10, 20 }" Dense="true" Key="@filteredVehicles.Count">
 
 		<HeaderContent>
 			@* <MudTh>Sl.No</MudTh> *@
@@ -321,7 +321,7 @@
 
 		if (string.IsNullOrEmpty(isAuthenticated) || isAuthenticated != "true")
 		{
-			Navigation.NavigateTo("/login", forceLoad: true);
+			Navigation.NavigateTo("/", forceLoad: true);
 		}
 	}
 
@@ -334,14 +334,14 @@
 			if (!response.IsSuccessStatusCode)
 			{
 				await JS.InvokeVoidAsync("localStorage.removeItem", "isAuthenticated");
-				Navigation.NavigateTo("/login", forceLoad: true);
+				Navigation.NavigateTo("/", forceLoad: true);
 			}
 		}
 		catch (Exception ex)
 		{
 			Console.WriteLine($"Session check error: {ex.Message}");
 			await JS.InvokeVoidAsync("localStorage.removeItem", "isAuthenticated");
-			Navigation.NavigateTo("/login", forceLoad: true);
+			Navigation.NavigateTo("/", forceLoad: true);
 		}
 	}
 

@@ -18,7 +18,7 @@
                 text = "You have been successfully logged out."
             });
 
-            Navigation.NavigateTo("/login", forceLoad: true);
+            Navigation.NavigateTo("/", forceLoad: true);
         }
         catch (Exception ex)
         {
@@ -30,7 +30,7 @@
                 text = "Something went wrong. Please try again."
             });
 
-            Navigation.NavigateTo("/login", forceLoad: true);
+            Navigation.NavigateTo("/", forceLoad: true);
         }
     }
 }

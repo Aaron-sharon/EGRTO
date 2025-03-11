@@ -96,3 +96,34 @@ body {
         }
     }
 }
+
+
+//Signup
+.signup-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #00f260, #0575e6); 
+}
+
+.signup-form {
+    width: 600px;
+    height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.signup-card {
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.signup-logo {
+    display: block;
+    margin: 0 auto 1rem auto;
+    width: 80px;
+    height: 80px;
+}

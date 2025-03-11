@@ -2,19 +2,16 @@
 @inject NavigationManager Navigation
 
 <MudAppBar Elevation="1" Class="nav-container">
-    <!-- Left Side: App Name -->
-    <MudText Typo="Typo.h5" Class="nav-title">MyApp</MudText>
 
-    <!-- Center: Icons -->
+    <MudText Typo="Typo.h5" Class="nav-title">EG RTO</MudText>
+
     <MudSpacer />
     <div class="nav-icons">
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" OnClick="OpenGitHub" />
         <MudIconButton Icon="@Icons.Material.Filled.Link" OnClick="OpenLink" />
     </div>
-
-    <!-- Right Side: Logout Button -->
     <MudSpacer />
-    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="Logout">
+    <MudButton Class="custom-logout-btn" OnClick="Logout">
         Logout
     </MudButton>
 </MudAppBar>
@@ -36,6 +33,6 @@
     private async Task Logout()
     {
         await JS.InvokeVoidAsync("localStorage.removeItem", "isAuthenticated");
-        Navigation.NavigateTo("/login", forceLoad: true);
+        Navigation.NavigateTo("/", forceLoad: true);
     }
 }

@@ -38,7 +38,6 @@ namespace AaronBackend.Controllers
         public async Task<IActionResult> Login([FromBody] User user)
         {
             var hashedPassword = HashPassword(user.PasswordHash); // Hash the incoming password
-
             var existingUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == user.Username && u.PasswordHash == hashedPassword);
 
@@ -53,6 +52,7 @@ namespace AaronBackend.Controllers
 
             return Ok(new { Message = "Login successful." });
         }
+
 
         [HttpPost("logout")]
         public IActionResult Logout()

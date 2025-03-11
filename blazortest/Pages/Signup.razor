@@ -1,6 +1,7 @@
 ﻿@page "/signup"
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 <MudContainer Class="signup-container">
     <MudCard>
@@ -53,7 +54,7 @@
                 icon = "success"
             });
 
-            // Optionally redirect to the login page
+            Navigation.NavigateTo("/login", forceLoad: true);
         }
         else
         {

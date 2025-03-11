@@ -19,22 +19,33 @@ builder.Services.AddDbContext<DBclass>(options =>
 // CORS Configuration
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy(name: MyAllowSpecificOrigins,
+//        policy =>
+//        {
+//            policy.WithOrigins("https://localhost:7135") 
+//                  .AllowAnyHeader()
+//                  .AllowAnyMethod();
+//        });
+//});
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins("https://localhost:7135") // Blazor frontend URL
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowAll",
+        builder => builder
+            .WithOrigins("https://localhost:7135") // Your Blazor frontend URL
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()); // Important for session cookies
 });
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout duration
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Strict; // Ensures cookies are set securely
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // For HTTPS only
 });
 
 var app = builder.Build();
@@ -52,7 +63,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseSession();
-app.UseCors(MyAllowSpecificOrigins); // Enable CORS Middleware
+app.UseCors("AllowAll"); // Enable CORS Middleware
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

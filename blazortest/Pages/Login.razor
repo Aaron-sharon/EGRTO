@@ -2,6 +2,8 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@using System.Text.Json;
+
 
 <MudContainer Class="login-container">
     <MudCard>
@@ -43,10 +45,15 @@
             PasswordHash = password
         };
 
-        var response = await Http.PostAsJsonAsync("https://localhost:7043/api/auth/login", loginData);
+        var response = await Http.PostAsJsonAsync("api/auth/login", loginData, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
 
         if (response.IsSuccessStatusCode)
         {
+            await JS.InvokeVoidAsync("localStorage.setItem", "isAuthenticated", "true");
+
             await JS.InvokeVoidAsync("Swal.fire", new
             {
                 title = "Success!",
@@ -54,6 +61,7 @@
                 icon = "success"
             });
 
+            await Task.Delay(500);  // Add a short delay
             Navigation.NavigateTo("/Welcoming", forceLoad: true);
         }
         else
@@ -67,4 +75,5 @@
             });
         }
     }
+
 }

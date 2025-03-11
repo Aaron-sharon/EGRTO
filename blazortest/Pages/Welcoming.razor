@@ -179,26 +179,16 @@
 			// Step 1: Verify and extract ID
 			if (!vehicle.TryGetValue("id", out var idObj) || !TryExtractId(idObj, out int id))
 			{
-				Console.WriteLine("❌ Error: Invalid or missing ID.");
 				Console.WriteLine($"🧐 Vehicle data: {JsonSerializer.Serialize(vehicle)}"); // Detailed log
 				return;
 			}
 
-			Console.WriteLine($"✅ Extracted ID: {id}");
-
-			// Step 2: Confirm Deletion via SweetAlert
-			Console.WriteLine("🟠 Calling confirmDelete JS function...");
 			var confirmed = await JS.InvokeAsync<bool>("confirmDelete");
-			Console.WriteLine($"🟢 JS confirmDelete result: {confirmed}");
-
 			if (!confirmed)
 			{
 				Console.WriteLine("❎ Deletion canceled by user.");
 				return;
 			}
-
-			// Step 3: DELETE API Call
-			Console.WriteLine($"🚀 Attempting DELETE request to: https://localhost:7043/Logic/delete/{id}");
 
 			var response = await Http.DeleteAsync($"https://localhost:7043/Logic/delete/{id}");
 

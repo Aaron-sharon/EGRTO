@@ -10,6 +10,9 @@
 	<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-3">Vehicles Details</MudText>
 
 	<MudGrid>
+		<MudButton OnClick="@Logout" Color="Color.Secondary" Class="ml-2">
+			Logout
+		</MudButton>
 		<MudItem xs="12" sm="8" md="10">
 			<MudTextField T="string" @bind-Value="searchQuery" Label="Search Vehicles" Clearable="true"
 						  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
@@ -68,6 +71,46 @@
 	private string searchQuery = "";
 	private List<Dictionary<string, object>> allVehicles = new();
 	private List<Dictionary<string, object>> filteredVehicles = new();
+
+	private async Task Logout()
+	{
+		try
+		{
+			var response = await Http.PostAsync("https://localhost:7043/api/auth/logout", null);
+
+			if (response.IsSuccessStatusCode)
+			{
+				await JS.InvokeVoidAsync("Swal.fire", new
+				{
+					icon = "success",
+					title = "Logged Out",
+					text = "You have been successfully logged out."
+				});
+
+				Navigation.NavigateTo("/", forceLoad: true);
+			}
+			else
+			{
+				await JS.InvokeVoidAsync("Swal.fire", new
+				{
+					icon = "error",
+					title = "Logout Failed",
+					text = "An error occurred during logout. Please try again."
+				});
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Logout error: {ex.Message}");
+			await JS.InvokeVoidAsync("Swal.fire", new
+			{
+				icon = "error",
+				title = "Unexpected Error",
+				text = "Something went wrong. Please try again."
+			});
+		}
+	}
+
 	private int GetRowNumber(Dictionary<string, object> vehicle)
 	{
 		var pageIndex = tableRef?.CurrentPage ?? 0;
@@ -270,4 +313,28 @@
 		}
 		return false;
 	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		await CheckSession();
+	}
+
+	private async Task CheckSession()
+	{
+		try
+		{
+			var response = await Http.GetAsync("https://localhost:7043/api/auth/check-session");
+
+			if (!response.IsSuccessStatusCode)
+			{
+				Navigation.NavigateTo("/login", forceLoad: true);
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Session check error: {ex.Message}");
+			Navigation.NavigateTo("/login", forceLoad: true);
+		}
+	}
+
 }

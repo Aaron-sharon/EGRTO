@@ -1,51 +1,75 @@
 ﻿@page "/signup"
+
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
-<MudContainer MaxWidth="MaxWidth.Small">
-    <MudText Typo="Typo.h4" Class="mb-4">Admin Signup</MudText>
+<MudContainer Class="signup-container">
+    <MudText Typo="Typo.h4" Align="Align.Center">Admin Signup</MudText>
+    <MudForm @ref="form" @onsubmit="SubmitSignup">
 
-    <MudTextField @bind-Value="Username" Label="Username" Required="true" />
-    <MudTextField @bind-Value="Email" Label="Email" Required="true" />
-    <MudTextField @bind-Value="Password" Label="Password" InputType="InputType.Password" Required="true" />
+        <MudTextField Label="Username" @bind-Value="user.Username" Required="true" RequiredError="Username is required." />
 
-    <MudButton OnClick="SubmitSignup" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Sign Up</MudButton>
+        <MudTextField Label="Email" @bind-Value="user.Email" Required="true"
+                      RequiredError="Email is required." Type="email" />
+
+        <MudTextField Label="Password" @bind-Value="user.PasswordHash" Required="true"
+                      RequiredError="Password is required." InputType="InputType.Password" />
+
+        <MudTextField Label="Confirm Password" @bind-Value="confirmPassword" Required="true"
+                      RequiredError="Confirm Password is required." InputType="InputType.Password" />
+
+        <MudButton Type="Submit" Color="Color.Primary" Variant="Variant.Filled">Sign Up</MudButton>
+    </MudForm>
 </MudContainer>
 
 @code {
-    private string Username { get; set; }
-    private string Email { get; set; }
-    private string Password { get; set; }
+    private MudForm form;
+    private User user = new();
+    private string confirmPassword = "";
 
     private async Task SubmitSignup()
     {
-        var newUser = new
+        if (user.PasswordHash != confirmPassword)
         {
-            Username,
-            PasswordHash = Password, // The API will handle hashing
-            Email
-        };
+            await JS.InvokeVoidAsync("Swal.fire", new
+            {
+                title = "Error",
+                text = "Passwords do not match.",
+                icon = "error"
+            });
+            return;
+        }
 
-        var response = await Http.PostAsJsonAsync("https://localhost:7043/Auth/signup", newUser);
+        var response = await Http.PostAsJsonAsync("https://localhost:7043/api/auth/signup", user);
 
         if (response.IsSuccessStatusCode)
         {
             await JS.InvokeVoidAsync("Swal.fire", new
             {
-                title = "Success!",
-                text = "User registered successfully.",
+                title = "Success",
+                text = "Admin registered successfully.",
                 icon = "success"
             });
+
+            NavigationManager.NavigateTo("/login");
         }
         else
         {
-            var error = await response.Content.ReadAsStringAsync();
+            var errorMessage = await response.Content.ReadAsStringAsync();
             await JS.InvokeVoidAsync("Swal.fire", new
             {
                 title = "Error",
-                text = error,
+                text = errorMessage,
                 icon = "error"
             });
         }
+    }
+
+    private class User
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
     }
 }

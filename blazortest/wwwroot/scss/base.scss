@@ -178,22 +178,24 @@ body {
 .nav-container {
     background-color: $secondary-color !important;
     padding: 0.5rem 1rem;
-}
 
-.nav-title {
-    color: $primary-color;
-    font-weight: bold;
-}
+    .nav-title {
+        color: $primary-color;
+        font-weight: bold;
+    }
 
-.nav-icons .mud-icon-button {
-    color: $primary-color;
-    margin: 0 0.5rem;
-}
+    .nav-icons {
+        .mud-icon-button {
+            color: $primary-color;
+            margin: 0 0.5rem;
+        }
+    }
 
-.custom-logout-btn {
-    @include button-styles;
-    background-color: wheat !important;
-    border-radius: 8px;
-    font-weight: bold;
-    text-transform: uppercase;
+    .custom-logout-btn {
+        @include button-styles;
+        border: 1px solid $primary-color;
+        border-radius: 8px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
 }

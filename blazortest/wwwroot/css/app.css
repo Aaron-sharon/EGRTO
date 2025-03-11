@@ -148,28 +148,25 @@ body {
   background-color: #9B1C31 !important;
   padding: 0.5rem 1rem;
 }
-
-.nav-title {
+.nav-container .nav-title {
   color: #FAF3E0;
   font-weight: bold;
 }
-
-.nav-icons .mud-icon-button {
+.nav-container .nav-icons .mud-icon-button {
   color: #FAF3E0;
   margin: 0 0.5rem;
 }
-
-.custom-logout-btn {
+.nav-container .custom-logout-btn {
   width: 10rem;
   color: #FAF3E0;
   background-color: #9B1C31;
   margin: 1rem 0rem;
-  background-color: wheat !important;
+  border: 1px solid #FAF3E0;
   border-radius: 8px;
   font-weight: bold;
   text-transform: uppercase;
 }
-.custom-logout-btn:hover {
+.nav-container .custom-logout-btn:hover {
   color: #9B1C31;
   background-color: #FAF3E0;
   border: 1px solid #9B1C31;

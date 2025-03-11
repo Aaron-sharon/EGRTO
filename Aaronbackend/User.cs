@@ -15,9 +15,5 @@ namespace AaronBackend.Models
 
         [Required]
         public string PasswordHash { get; set; } // We'll assume the password is hashed.
-
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
     }
 }

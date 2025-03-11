@@ -1,75 +1,69 @@
 ﻿@page "/signup"
-
 @inject HttpClient Http
 @inject IJSRuntime JS
-@inject NavigationManager NavigationManager
 
 <MudContainer Class="signup-container">
-    <MudText Typo="Typo.h4" Align="Align.Center">Admin Signup</MudText>
-    <MudForm @ref="form" @onsubmit="SubmitSignup">
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h4" Class="text-center">Admin Signup</MudText>
+        </MudCardHeader>
 
-        <MudTextField Label="Username" @bind-Value="user.Username" Required="true" RequiredError="Username is required." />
+        <MudCardContent>
+            <MudTextField Label="Username" @bind-Value="username" Required="true" />
+            <MudTextField Label="Password" @bind-Value="password" InputType="InputType.Password" Required="true" />
+        </MudCardContent>
 
-        <MudTextField Label="Email" @bind-Value="user.Email" Required="true"
-                      RequiredError="Email is required." Type="email" />
-
-        <MudTextField Label="Password" @bind-Value="user.PasswordHash" Required="true"
-                      RequiredError="Password is required." InputType="InputType.Password" />
-
-        <MudTextField Label="Confirm Password" @bind-Value="confirmPassword" Required="true"
-                      RequiredError="Confirm Password is required." InputType="InputType.Password" />
-
-        <MudButton Type="Submit" Color="Color.Primary" Variant="Variant.Filled">Sign Up</MudButton>
-    </MudForm>
+        <MudCardActions Class="justify-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignupUser">Signup</MudButton>
+        </MudCardActions>
+    </MudCard>
 </MudContainer>
 
 @code {
-    private MudForm form;
-    private User user = new();
-    private string confirmPassword = "";
+    private string username = "";
+    private string password = "";
 
-    private async Task SubmitSignup()
+    private async Task SignupUser()
     {
-        if (user.PasswordHash != confirmPassword)
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
             await JS.InvokeVoidAsync("Swal.fire", new
             {
                 title = "Error",
-                text = "Passwords do not match.",
+                text = "Please fill in all fields.",
                 icon = "error"
             });
             return;
         }
 
-        var response = await Http.PostAsJsonAsync("https://localhost:7043/api/auth/signup", user);
+        var signupData = new
+        {
+            Username = username,
+            PasswordHash = password
+        };
+
+        var response = await Http.PostAsJsonAsync("https://localhost:7043/api/auth/signup", signupData);
 
         if (response.IsSuccessStatusCode)
         {
             await JS.InvokeVoidAsync("Swal.fire", new
             {
-                title = "Success",
-                text = "Admin registered successfully.",
+                title = "Success!",
+                text = "Signup successful.",
                 icon = "success"
             });
 
-            NavigationManager.NavigateTo("/login");
+            // Optionally redirect to the login page
         }
         else
         {
-            var errorMessage = await response.Content.ReadAsStringAsync();
+            string errorMessage = await response.Content.ReadAsStringAsync();
             await JS.InvokeVoidAsync("Swal.fire", new
             {
-                title = "Error",
+                title = "Signup Failed",
                 text = errorMessage,
                 icon = "error"
             });
         }
-    }
-
-    private class User
-    {
-        public string Username { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
     }
 }

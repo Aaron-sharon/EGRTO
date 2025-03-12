@@ -2,7 +2,7 @@
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JS
-
+@inject ISnackbar Snackbar
 
 <MudContainer Class="signup-container">
     <div class="signup-form">
@@ -42,23 +42,13 @@
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
         {
-            await JS.InvokeVoidAsync("Swal.fire", new
-            {
-                title = "Error",
-                text = "Please fill in all fields.",
-                icon = "error"
-            });
+            Snackbar.Add("Please fill in all fields.", Severity.Error);
             return;
         }
 
         if (password != confirmPassword)
         {
-            await JS.InvokeVoidAsync("Swal.fire", new
-            {
-                title = "Error",
-                text = "Passwords do not match.",
-                icon = "error"
-            });
+            Snackbar.Add("Password Doesn't match!", Severity.Error);
             return;
         }
 
@@ -67,26 +57,14 @@
 
         if (response.IsSuccessStatusCode)
         {
-            await JS.InvokeVoidAsync("Swal.fire", new
-            {
-                title = "Success!",
-                text = "Signup successful.",
-                icon = "success",
-                showConfirmButton = false,
-                timer = 2000
-            });
-
+            Snackbar.Add("Account Created Successfully!", Severity.Success);
+            await Task.Delay(1500);
             Navigation.NavigateTo("/", forceLoad: true);
         }
         else
         {
             string errorMessage = await response.Content.ReadAsStringAsync();
-            await JS.InvokeVoidAsync("Swal.fire", new
-            {
-                title = "Signup Failed",
-                text = errorMessage,
-                icon = "error"
-            });
+            Snackbar.Add("User already exists! Try Another user", Severity.Error);
         }
     }
 }

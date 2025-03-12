@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject ISnackbar Snackbar
 @using System.Text.Json;
 
 <div class="login-container">
@@ -22,9 +23,9 @@
             </MudCardContent>
 
             <MudCardActions>
-				<MudButton Class="btn-primary-button" OnClick="LoginUser">
-					Login
-				</MudButton>
+                <MudButton Class="btn-primary-button" OnClick="LoginUser">
+                    Login
+                </MudButton>
             </MudCardActions>
 
             <MudDivider />
@@ -35,61 +36,41 @@
     </div>
 </div>
 
-
-
 @code {
-	private string username = "";
-	private string password = "";
+    private string username = "";
+    private string password = "";
 
-	private async Task LoginUser()
-	{
-		if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-		{
-			await JS.InvokeVoidAsync("Swal.fire", new
-			{
-				title = "Error",
-				text = "Please fill in all fields.",
-				icon = "error"
-			});
-			return;
-		}
+    private async Task LoginUser()
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            Snackbar.Add("Please fill in all fields.", Severity.Error);
+            return;
+        }
 
-		var loginData = new
-		{
-			Username = username,
-			PasswordHash = password
-		};
+        var loginData = new
+        {
+            Username = username,
+            PasswordHash = password
+        };
 
-		var response = await Http.PostAsJsonAsync("api/auth/login", loginData, new JsonSerializerOptions
-			{
-				PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-			});
+        var response = await Http.PostAsJsonAsync("api/auth/login", loginData, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
 
-		if (response.IsSuccessStatusCode)
-		{
-			await JS.InvokeVoidAsync("localStorage.setItem", "isAuthenticated", "true");
+        if (response.IsSuccessStatusCode)
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "isAuthenticated", "true");
+            Snackbar.Add("Login successful!", Severity.Success);
 
-			await JS.InvokeVoidAsync("Swal.fire", new
-			{
-				title = "Success!",
-				text = "Login successful.",
-				icon = "success",
-				showConfirmButton = false,
-				timer = 2000
-			});
-
-			await Task.Delay(500);  // Add a short delay
-			Navigation.NavigateTo("/Welcoming", forceLoad: true);
-		}
-		else
-		{
-			string errorMessage = await response.Content.ReadAsStringAsync();
-			await JS.InvokeVoidAsync("Swal.fire", new
-			{
-				title = "Login Failed",
-				text = errorMessage,
-				icon = "error"
-			});
-		}
-	}
+            await Task.Delay(3000); 
+            Navigation.NavigateTo("/Welcoming", forceLoad: true);
+        }
+        else
+        {
+            string errorMessage = await response.Content.ReadAsStringAsync();
+            Snackbar.Add(errorMessage, Severity.Error);
+        }
+    }
 }

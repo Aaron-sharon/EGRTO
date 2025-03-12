@@ -43,7 +43,7 @@ namespace AaronBackend.Controllers
 
             if (existingUser == null)
             {
-                return Unauthorized("Invalid username or password.");
+                return Unauthorized("Uh Oh, Invalid User or Password");
             }
 
             // Store session

@@ -4,6 +4,7 @@
 @using Aaronbackend
 @using MudBlazor
 @inject IJSRuntime JS
+@inject ISnackbar Snackbar
 
 @code {
 	[Parameter] public EventCallback OnVehicleAdded { get; set; }
@@ -88,12 +89,7 @@
 				// 🕒 Add delay before showing the SweetAlert
 				await Task.Delay(1000); // 1 second delay
 
-				await JS.InvokeVoidAsync("Swal.fire", new
-				{
-					title = "Success!",
-					text = IsEditMode ? "Vehicle updated successfully." : "Vehicle added successfully.",
-					icon = "success"
-				});
+				Snackbar.Add("Operation Successful", Severity.Success);
 			}
 			else
 			{
@@ -106,12 +102,7 @@
 				// Delay before showing error alert
 				await Task.Delay(1000);
 
-				await JS.InvokeVoidAsync("Swal.fire", new
-				{
-					title = "Error!",
-					text = errorMessage,
-					icon = "error"
-				});
+				Snackbar.Add("Something Went Wrong!", Severity.Error);
 			}
 		}
 		catch (Exception ex)
@@ -124,12 +115,7 @@
 			// Delay before showing error alert
 			await Task.Delay(1000);
 
-			await JS.InvokeVoidAsync("Swal.fire", new
-			{
-				title = "Unexpected Error",
-				text = "Something went wrong. Please try again.",
-				icon = "error"
-			});
+			Snackbar.Add("Something Went Wrong!", Severity.Error);
 		}
 
 		isSubmitting = false;

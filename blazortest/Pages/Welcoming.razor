@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @inject IDialogService DialogService
 @using System.Text.Json;
+@inject ISnackbar Snackbar
 @inject IJSRuntime JS
 
 <NavMenu />
@@ -74,47 +75,6 @@
 	private string searchQuery = "";
 	private List<Dictionary<string, object>> allVehicles = new();
 	private List<Dictionary<string, object>> filteredVehicles = new();
-
-	// private async Task Logout()
-	// {
-	// 	var confirmed = await JS.InvokeAsync<bool>("Swal.fire", new
-	// 	{
-	// 		title = "Are you sure?",
-	// 		text = "You will be logged out.",
-	// 		icon = "warning",
-	// 		showCancelButton = true,
-	// 		confirmButtonText = "Yes, logout!",
-	// 		cancelButtonText = "Cancel"
-	// 	});
-
-	// 	if (!confirmed) return;
-
-	// 	try
-	// 	{
-	// 		await Http.PostAsync("https:localhost:7043/api/auth/logout", null);
-	// 		await JS.InvokeVoidAsync("localStorage.removeItem", "isAuthenticated");
-
-	// 		await JS.InvokeVoidAsync("Swal.fire", new
-	// 		{
-	// 			icon = "success",
-	// 			title = "Logged Out",
-	// 			text = "You have been successfully logged out."
-	// 		});
-
-	// 		await RefreshTable(); Clear vehicle data after logout
-	// 		Navigation.NavigateTo("/login", forceLoad: true);
-	// 	}
-	// 	catch (Exception ex)
-	// 	{
-	// 		Console.WriteLine($"Logout error: {ex.Message}");
-	// 		await JS.InvokeVoidAsync("Swal.fire", new
-	// 		{
-	// 			icon = "error",
-	// 			title = "Unexpected Error",
-	// 			text = "Something went wrong. Please try again."
-	// 		});
-	// 	}
-	// }
 
 	private int GetRowNumber(Dictionary<string, object> vehicle)
 	{
@@ -224,16 +184,21 @@
 	{
 		try
 		{
-			// Step 1: Verify and extract ID
 			if (!vehicle.TryGetValue("id", out var idObj) || !TryExtractId(idObj, out int id))
 			{
 				Console.WriteLine($"🧐 Vehicle data: {JsonSerializer.Serialize(vehicle)}"); // Detailed log
+				Snackbar.Add("Vehicle data is invalid. Unable to delete.", Severity.Error);
 				return;
 			}
 
-			var confirmed = await JS.InvokeAsync<bool>("confirmDelete");
-			if (!confirmed)
+			bool? confirmed = await DialogService.ShowMessageBox(
+				"Delete Confirmation",
+				"Do you really want to delete this vehicle?",
+				"Yes", "No");
+
+			if (confirmed != true) // Cancelled
 			{
+				Snackbar.Add("Deletion canceled by user.", Severity.Info);
 				Console.WriteLine("❎ Deletion canceled by user.");
 				return;
 			}
@@ -243,23 +208,25 @@
 			if (response.IsSuccessStatusCode)
 			{
 				Console.WriteLine("✅ Vehicle deleted successfully.");
-				await JS.InvokeVoidAsync("showSuccessAlert");
+				Snackbar.Add("Vehicle deleted successfully.", Severity.Success);
 				await RefreshTable();
 			}
 			else
 			{
+				string errorMessage = await response.Content.ReadAsStringAsync();
 				Console.WriteLine($"❗ Delete failed. Status: {response.StatusCode}");
-				Console.WriteLine($"🔎 Response Content: {await response.Content.ReadAsStringAsync()}");
-				await JS.InvokeVoidAsync("showErrorAlert");
+				Snackbar.Add($"Failed to delete vehicle: {errorMessage}", Severity.Error);
 			}
 		}
 		catch (JSException jsEx)
 		{
 			Console.WriteLine($"⚠️ JS Exception: {jsEx.Message}");
+			Snackbar.Add("A JavaScript error occurred.", Severity.Warning);
 		}
 		catch (Exception ex)
 		{
 			Console.WriteLine($"❗ Unexpected Error: {ex.Message}");
+			Snackbar.Add("An unexpected error occurred. Please try again.", Severity.Error);
 		}
 	}
 

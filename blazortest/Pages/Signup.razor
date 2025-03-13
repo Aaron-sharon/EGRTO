@@ -57,7 +57,9 @@
 
         if (response.IsSuccessStatusCode)
         {
-            Snackbar.Add("Account Created Successfully!", Severity.Success);
+            Snackbar.Add("Account Created Successfully!", Severity.Success, (options) => {
+                options.CloseAfterNavigation = true;
+            });
             await Task.Delay(1500);
             Navigation.NavigateTo("/", forceLoad: true);
         }

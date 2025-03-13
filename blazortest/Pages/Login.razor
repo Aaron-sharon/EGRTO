@@ -62,9 +62,11 @@
         if (response.IsSuccessStatusCode)
         {
             await JS.InvokeVoidAsync("localStorage.setItem", "isAuthenticated", "true");
-            Snackbar.Add("Login successful!", Severity.Success);
+            Snackbar.Add("Login successful!", Severity.Success, (options) => {
+                options.CloseAfterNavigation = true;
+            });
 
-            await Task.Delay(3000); 
+            await Task.Delay(1000); 
             Navigation.NavigateTo("/Welcoming", forceLoad: true);
         }
         else

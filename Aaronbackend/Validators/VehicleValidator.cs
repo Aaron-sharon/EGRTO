@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Aaronbackend;
+using FluentValidation;
 
 public class VehicleValidator : AbstractValidator<Vehicle>
 {

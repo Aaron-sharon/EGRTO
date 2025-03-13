@@ -1,6 +1,9 @@
 using Aaronbackend;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,9 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Strict; // Ensures cookies are set securely
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // For HTTPS only
 });
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<VehicleValidator>();
 
 var app = builder.Build();
 

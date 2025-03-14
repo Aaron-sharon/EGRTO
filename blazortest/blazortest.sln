@@ -3,11 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blazortest", "blazortest.csproj", "{9CB69451-E406-4E82-A041-59255DD60BC8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blazortest", "..\blazortest\blazortest.csproj", "{9CB69451-E406-4E82-A041-59255DD60BC8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aaronbackend", "..\Aaronbackend\Aaronbackend.csproj", "{12DD03D8-A79D-427F-9486-757799BD7D23}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "..\BlazorComp\WebApplication1\WebApplication1.csproj", "{8C8D5F48-4A76-465B-B66E-F750D36F8DD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

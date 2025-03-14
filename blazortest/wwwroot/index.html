@@ -12,22 +12,40 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="blazortest.styles.css" rel="stylesheet" />
 </head>
+<style>
 
+    .loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        text-align: center;
+        animation: slideDown 2s ease-in-out infinite alternate;
+    }
+
+    .loading-image {
+        width: 250px;
+        height: 250px;
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-100%);
+        }
+
+        to {
+            transform: translateY(0);
+        }
+    }
+
+</style>
 <body>
-    <div id="alert-container"></div> <!-- 👈 Custom Alert Container -->
+    <div id="alert-container"></div> 
 
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
-    </div>
-
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>
+        <div class="loading-container">
+            <img src="/EG_LOGO.jpg" class="loading-image" alt="Loading..." />
+        </div>
     </div>
 
     <script src="_framework/blazor.webassembly.js"></script>

@@ -52,3 +52,8 @@
 /Aaronbackend/obj/Debug/net9.0/Aaronbackend.csproj.CoreCompileInputs.cache
 /Aaronbackend/obj/Aaronbackend.csproj.nuget.g.targets
 /Aaronbackend/obj/Aaronbackend.csproj.nuget.g.props
+/Aaronbackend/bin/Debug/net9.0/Microsoft.IdentityModel.Abstractions.dll
+/Aaronbackend/bin/Debug/net9.0/Microsoft.IdentityModel.Logging.dll
+/Aaronbackend/bin/Debug/net9.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/Aaronbackend/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.dll
+/Aaronbackend/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll

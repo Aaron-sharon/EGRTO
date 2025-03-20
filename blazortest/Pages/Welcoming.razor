@@ -14,9 +14,6 @@
 	<MudText Typo="Typo.h4" Align="Align.Center" Class="mb-3">Vehicles Details</MudText>
 
 	<MudGrid>
-		@* <MudButton OnClick="@Logout" Color="Color.Secondary" Class="ml-2"> *@
-		@* 	Logout *@
-		@* </MudButton> *@
 		<MudItem xs="12" sm="8" md="10">
 			<MudTextField T="string" @bind-Value="searchQuery" Label="Search Vehicles" Clearable="true"
 						  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
@@ -286,9 +283,9 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		var isAuthenticated = await JS.InvokeAsync<string>("localStorage.getItem", "isAuthenticated");
+		var isAuthenticated = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
 
-		if (string.IsNullOrEmpty(isAuthenticated) || isAuthenticated != "true")
+		if (string.IsNullOrEmpty(isAuthenticated))
 		{
 			Navigation.NavigateTo("/", forceLoad: true);
 		}

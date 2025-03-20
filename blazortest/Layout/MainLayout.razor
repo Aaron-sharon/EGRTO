@@ -3,8 +3,17 @@
         <MudPopoverProvider />
         <MudDialogProvider />
         <MudSnackbarProvider />
-    
+@inject AuthHeaderHandler InterceptorService
+
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
 <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
 
 @Body
+
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await InterceptorService.AttachToken();
+    }
+}

@@ -61,13 +61,25 @@
 
         if (response.IsSuccessStatusCode)
         {
-            await JS.InvokeVoidAsync("localStorage.setItem", "isAuthenticated", "true");
-            Snackbar.Add("Login successful!", Severity.Success, (options) => {
-                options.CloseAfterNavigation = true;
-            });
+            var result = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
 
-            await Task.Delay(1000); 
-            Navigation.NavigateTo("/Welcoming", forceLoad: true);
+            if (result != null && result.ContainsKey("token"))
+            {
+                var token = result["token"];
+                await JS.InvokeVoidAsync("localStorage.setItem", "authToken", token);
+
+                Snackbar.Add("Login successful!", Severity.Success, options =>
+                {
+                    options.CloseAfterNavigation = true;
+                });
+
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/welcoming", forceLoad: true);
+            }
+            else
+            {
+                Snackbar.Add("Failed to retrieve token.", Severity.Error);
+            }
         }
         else
         {

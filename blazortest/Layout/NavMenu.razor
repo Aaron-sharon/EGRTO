@@ -1,5 +1,6 @@
 ﻿@inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject HttpClient Http
 
 <MudAppBar Elevation="1" Class="nav-container">
 
@@ -32,7 +33,16 @@
 
     private async Task Logout()
     {
+        // Call the backend logout API to clear the session on the server side
+        await Http.PostAsync("api/auth/logout", null);
+
+        // Clear the JWT token from local storage
+        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+
+        // Ensure `isAuthenticated` is also removed for UI control
         await JS.InvokeVoidAsync("localStorage.removeItem", "isAuthenticated");
+
+        // Redirect to the login page
         Navigation.NavigateTo("/", forceLoad: true);
     }
 }
